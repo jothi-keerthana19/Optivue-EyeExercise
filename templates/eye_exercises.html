@@ -417,7 +417,8 @@
 
     <!-- Camera Preview -->
     <div id="camera-container">
-        <img id="video" src="/api/enhanced-eye-tracking/video_feed" alt="Camera Feed" />
+        <img id="video" alt="Camera Feed" style="display: none;" />
+        <canvas id="video-canvas"></canvas>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -530,6 +531,8 @@
         let videoStream = null;
         let videoElement = null;
         let canvasElement = null;
+        let displayCanvas = null;
+        let displayCtx = null;
 
         async function toggleTracking() {
             const toggle = document.getElementById('trackingToggle');
@@ -564,8 +567,11 @@
                         document.body.appendChild(canvasElement);
                     }
 
-                    // Get context with willReadFrequently for better performance
-                    const ctx = canvasElement.getContext('2d', { willReadFrequently: true });
+                    // Get display canvas for showing the camera feed
+                    displayCanvas = document.getElementById('video-canvas');
+                    displayCanvas.width = 320;
+                    displayCanvas.height = 240;
+                    displayCtx = displayCanvas.getContext('2d');
 
                     videoElement.srcObject = videoStream;
 
@@ -618,6 +624,9 @@
                     // Show the camera container with the backend processed feed
                     document.getElementById('camera-container').classList.add('active');
 
+                    // Start rendering live video
+                    renderLiveVideo();
+
                     // Start sending frames to backend and polling for results
                     startFrameCapture();
                     startFocusPolling();
@@ -638,14 +647,65 @@
                 // Stop camera stream
                 stopFrameCapture();
                 stopFocusPolling();
+                stopLiveVideo();
 
                 if (videoStream) {
                     videoStream.getTracks().forEach(track => track.stop());
                     videoStream = null;
                 }
 
+                if (displayCanvas) {
+                    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+                }
+
                 document.getElementById('camera-container').classList.remove('active');
                 document.getElementById('startBtn').disabled = true;
+            }
+        }
+
+        let renderInterval = null;
+        let lastDetectionData = null;
+
+        function renderLiveVideo() {
+            if (renderInterval) return;
+
+            renderInterval = setInterval(() => {
+                if (!videoElement || !displayCanvas || !trackingEnabled) return;
+
+                if (videoElement.readyState >= 2) {
+                    // Draw video frame
+                    displayCtx.drawImage(videoElement, 0, 0, 320, 240);
+
+                    // Draw bounding box if face detected
+                    if (lastDetectionData && lastDetectionData.face_detected && lastDetectionData.bbox) {
+                        const bbox = lastDetectionData.bbox;
+                        // Scale coordinates to display canvas size
+                        const scaleX = 320 / 640;
+                        const scaleY = 240 / 480;
+                        
+                        const x = bbox.x * scaleX;
+                        const y = bbox.y * scaleY;
+                        const width = bbox.width * scaleX;
+                        const height = bbox.height * scaleY;
+
+                        // Draw bounding box
+                        displayCtx.strokeStyle = '#00FF00';
+                        displayCtx.lineWidth = 3;
+                        displayCtx.strokeRect(x, y, width, height);
+
+                        // Draw confidence text
+                        displayCtx.fillStyle = '#00FF00';
+                        displayCtx.font = 'bold 14px Arial';
+                        displayCtx.fillText('Face Detected', x, y - 5);
+                    }
+                }
+            }, 33); // ~30 FPS
+        }
+
+        function stopLiveVideo() {
+            if (renderInterval) {
+                clearInterval(renderInterval);
+                renderInterval = null;
             }
         }
 
@@ -762,6 +822,9 @@
             const faceDetected = data.face_detected;
             const statusBadge = document.getElementById('focus-status-badge');
             const statusText = document.getElementById('focus-status-text');
+
+            // Store detection data for rendering
+            lastDetectionData = data;
 
             if (faceDetected) {
                 consecutiveFailures = 0;

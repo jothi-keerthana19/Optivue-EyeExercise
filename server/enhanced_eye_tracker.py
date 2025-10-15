@@ -160,6 +160,23 @@ class EnhancedEyeTracker:
             'success': True
         }
 
+        # Add bbox data if face was detected
+        if face_detected and results.detections:
+            detection = results.detections[0]
+            bbox_data = detection.location_data.relative_bounding_box
+            
+            x = int(bbox_data.xmin * frame_width)
+            y = int(bbox_data.ymin * frame_height)
+            w = int(bbox_data.width * frame_width)
+            h = int(bbox_data.height * frame_height)
+            
+            data['bbox'] = {
+                'x': x,
+                'y': y,
+                'width': w,
+                'height': h
+            }
+
         return data, annotated_frame
 
     def process_frame(self, frame: np.ndarray) -> Dict[str, Any]:
