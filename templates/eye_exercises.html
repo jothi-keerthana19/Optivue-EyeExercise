@@ -421,8 +421,6 @@
         <img id="video" src="/api/enhanced-eye-tracking/video_feed" alt="Camera Feed" />
     </div>
 
-    <canvas id="canvas" style="display: none;"></canvas>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Application State
@@ -531,75 +529,34 @@
             }
         }
 
-        let browserVideoStream = null;
-        let browserVideoElement = null;
-        let captureCanvas = null;
-        let captureContext = null;
-        let displayCanvas = null;
-        let displayContext = null;
-
         async function toggleTracking() {
             const toggle = document.getElementById('trackingToggle');
             trackingEnabled = toggle.checked;
 
             if (trackingEnabled) {
                 try {
-                    // Request browser webcam access
-                    const stream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { width: 640, height: 480 } 
-                    });
-                    browserVideoStream = stream;
-                    
-                    // Create video element for browser webcam (hidden)
-                    if (!browserVideoElement) {
-                        browserVideoElement = document.createElement('video');
-                        browserVideoElement.autoplay = true;
-                        browserVideoElement.playsInline = true;
-                        browserVideoElement.width = 640;
-                        browserVideoElement.height = 480;
-                        browserVideoElement.style.display = 'none';
-                        document.body.appendChild(browserVideoElement);
-                    }
-                    
-                    browserVideoElement.srcObject = browserVideoStream;
-                    
-                    // Wait for video to be ready
-                    await new Promise((resolve) => {
-                        browserVideoElement.onloadedmetadata = () => {
-                            browserVideoElement.play();
-                            resolve();
-                        };
+                    // Start the backend camera
+                    const startResponse = await fetch('/api/enhanced-eye-tracking/start_camera', {
+                        method: 'POST'
                     });
                     
-                    // Create canvas for frame capture (hidden)
-                    if (!captureCanvas) {
-                        captureCanvas = document.getElementById('canvas');
-                        captureContext = captureCanvas.getContext('2d');
-                        captureCanvas.width = 640;
-                        captureCanvas.height = 480;
+                    if (!startResponse.ok) {
+                        throw new Error('Failed to start camera on backend');
                     }
                     
-                    // Create display canvas for showing video with bounding box
-                    const cameraContainer = document.getElementById('camera-container');
-                    const existingContent = cameraContainer.querySelector('#video, #display-canvas');
-                    if (existingContent) {
-                        existingContent.remove();
+                    // Start tracking
+                    const trackResponse = await fetch('/api/enhanced-eye-tracking/start_tracking', {
+                        method: 'POST'
+                    });
+                    
+                    if (!trackResponse.ok) {
+                        throw new Error('Failed to start tracking');
                     }
                     
-                    displayCanvas = document.createElement('canvas');
-                    displayCanvas.id = 'display-canvas';
-                    displayCanvas.width = 640;
-                    displayCanvas.height = 480;
-                    displayCanvas.style.width = '100%';
-                    displayCanvas.style.height = '100%';
-                    displayCanvas.style.objectFit = 'cover';
-                    displayCanvas.style.transform = 'scaleX(-1)';
-                    displayContext = displayCanvas.getContext('2d');
+                    // Show the camera container with the backend video feed
+                    document.getElementById('camera-container').classList.add('active');
                     
-                    cameraContainer.appendChild(displayCanvas);
-                    cameraContainer.classList.add('active');
-                    
-                    // Start face detection polling
+                    // Start polling for detection data
                     startFocusPolling();
                     
                     if (selectedExercise) {
@@ -612,17 +569,15 @@
                     console.error('Error starting camera:', error);
                     toggle.checked = false;
                     trackingEnabled = false;
-                    showNotification('Failed to access camera. Please allow camera permissions.', 'danger');
+                    showNotification('Failed to start camera: ' + error.message, 'danger');
                 }
             } else {
-                // Stop camera
-                if (browserVideoStream) {
-                    browserVideoStream.getTracks().forEach(track => track.stop());
-                    browserVideoStream = null;
-                }
-                
-                if (browserVideoElement) {
-                    browserVideoElement.srcObject = null;
+                // Stop tracking and camera
+                try {
+                    await fetch('/api/enhanced-eye-tracking/stop_tracking', { method: 'POST' });
+                    await fetch('/api/enhanced-eye-tracking/stop_camera', { method: 'POST' });
+                } catch (error) {
+                    console.error('Error stopping camera:', error);
                 }
                 
                 stopFocusPolling();
@@ -634,91 +589,25 @@
         function startFocusPolling() {
             if (pollingInterval) return;
             
+            // Poll the backend's detection endpoint instead of sending frames
             pollingInterval = setInterval(async () => {
-                if (browserVideoElement && captureCanvas && displayCanvas) {
-                    // Check if video is ready
-                    if (browserVideoElement.readyState < 2) {
-                        return; // Video not ready yet
+                try {
+                    const response = await fetch('/api/enhanced-eye-tracking/get_enhanced_gaze');
+                    
+                    if (!response.ok) {
+                        console.error('Focus polling failed:', response.status);
+                        return;
                     }
                     
-                    try {
-                        // Capture current frame from browser webcam
-                        captureContext.drawImage(browserVideoElement, 0, 0, 640, 480);
-                        
-                        // Convert canvas to blob with proper error handling
-                        captureCanvas.toBlob(async (blob) => {
-                            if (!blob || blob.size === 0) {
-                                console.error('Failed to create blob from canvas');
-                                drawVideoWithoutBox();
-                                return;
-                            }
-                            
-                            try {
-                                // Send frame to backend for face detection
-                                const formData = new FormData();
-                                formData.append('frame', blob, 'frame.jpg');
-                                
-                                const response = await fetch('/api/enhanced-eye-tracking/detect_face', {
-                                    method: 'POST',
-                                    body: formData
-                                });
-                                
-                                if (!response.ok) {
-                                    const errorText = await response.text();
-                                    console.error('Face detection request failed:', response.status, errorText);
-                                    drawVideoWithoutBox();
-                                    return;
-                                }
-                                
-                                const data = await response.json();
-                                handleFocusData(data);
-                                
-                                // Draw video frame with or without bounding box
-                                if (data.face_detected && data.bbox) {
-                                    drawBoundingBox(data.bbox);
-                                } else {
-                                    drawVideoWithoutBox();
-                                }
-                            } catch (error) {
-                                console.error('Focus polling error:', error);
-                                drawVideoWithoutBox();
-                            }
-                        }, 'image/jpeg', 0.95);
-                        
-                    } catch (error) {
-                        console.error('Focus polling error:', error);
-                        drawVideoWithoutBox();
-                    }
+                    const data = await response.json();
+                    handleFocusData(data);
+                    
+                } catch (error) {
+                    console.error('Focus polling error:', error);
                 }
             }, 500);
         }
         
-        function drawVideoWithoutBox() {
-            if (!displayContext || !browserVideoElement) return;
-            displayContext.clearRect(0, 0, 640, 480);
-            displayContext.drawImage(browserVideoElement, 0, 0, 640, 480);
-        }
-        
-        function drawBoundingBox(bbox) {
-            if (!displayContext || !browserVideoElement) return;
-            
-            // Clear and draw video frame
-            displayContext.clearRect(0, 0, 640, 480);
-            displayContext.drawImage(browserVideoElement, 0, 0, 640, 480);
-            
-            // Draw bounding box
-            displayContext.strokeStyle = '#00FF00';
-            displayContext.lineWidth = 3;
-            displayContext.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
-            
-            // Draw label with background
-            displayContext.fillStyle = 'rgba(0, 255, 0, 0.7)';
-            displayContext.fillRect(bbox.x, bbox.y - 25, 140, 25);
-            displayContext.fillStyle = '#000000';
-            displayContext.font = 'bold 16px Arial';
-            displayContext.fillText('Face Detected', bbox.x + 5, bbox.y - 7);
-        }
-
         function stopFocusPolling() {
             if (pollingInterval) {
                 clearInterval(pollingInterval);

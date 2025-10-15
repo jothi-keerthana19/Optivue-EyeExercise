@@ -130,52 +130,6 @@ class EnhancedEyeTrackingServer:
                 # Return a default "not detected" status
                 return jsonify({'success': True, 'face_detected': False})
             return jsonify(self.last_detection_result)
-        
-        @self.app.route('/api/enhanced-eye-tracking/detect_face', methods=['POST'])
-        def detect_face():
-            """Receive frame from browser and detect face using MediaPipe."""
-            try:
-                if 'frame' not in request.files:
-                    print("ERROR: No 'frame' in request.files")
-                    print("Available files:", list(request.files.keys()))
-                    return jsonify({'success': False, 'face_detected': False, 'message': 'No frame provided'}), 400
-                
-                file = request.files['frame']
-                file_bytes = file.read()
-                
-                if len(file_bytes) == 0:
-                    print("ERROR: Empty frame received")
-                    return jsonify({'success': False, 'face_detected': False, 'message': 'Empty frame'}), 400
-                
-                print(f"Received frame: {len(file_bytes)} bytes")
-                
-                npimg = np.frombuffer(file_bytes, np.uint8)
-                frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-                
-                if frame is None:
-                    print("ERROR: Failed to decode frame")
-                    return jsonify({'success': False, 'face_detected': False, 'message': 'Invalid frame'}), 400
-                
-                print(f"Decoded frame shape: {frame.shape}")
-                
-                result = self.eye_tracker.process_frame(frame)
-                
-                print(f"Detection result: {result}")
-                
-                return jsonify({
-                    'success': True,
-                    'face_detected': result.get('face_detected', False),
-                    'bbox': result.get('bbox', None)
-                })
-                
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                return jsonify({
-                    'success': False,
-                    'face_detected': False,
-                    'message': str(e)
-                }), 500
 
         @self.app.route('/api/enhanced-eye-tracking/video_feed')
         def video_feed():
