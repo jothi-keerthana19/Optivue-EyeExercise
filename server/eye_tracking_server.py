@@ -34,6 +34,10 @@ class EyeTrackingServer:
         self.frame_thread = None
         self.frame_thread_active = False
         
+        # Demo mode for testing without camera
+        self.demo_mode = False
+        self.demo_face_present = True  # Simulates face presence in demo
+        
         self.setup_routes()
     
     def setup_routes(self):
