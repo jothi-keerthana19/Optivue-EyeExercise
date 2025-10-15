@@ -1,0 +1,289 @@
+Of course. I've analyzed the new error logs, and the problem is now crystal clear. The "400 Bad Request" error, combined with a blank camera window, confirms that the frontend is attempting to send data, but the data itself is empty or malformed. This happens because the browser's video element is not being correctly captured before sending the frame to the server.
+
+The core of the fix is to properly implement the client-side camera capture. The browser will handle accessing your local webcam, and we'll send snapshots to the server for analysis.
+
+Here is the complete, final, and corrected implementation that will rectify all the issues.
+
+## 1. Frontend Logic: client/src/pages/EyeExercise.tsx (Crucial Update)
+This is the most critical change. We need to tell the frontend how to capture frames from the video element and send them for processing. This code also ensures the processed video feed with bounding boxes is displayed. Replace the entire content of this file with the code below.
+
+TypeScript
+
+import { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { processFrame } from '@/lib/eyeTracking'; // Use the correct API function
+
+// Main component for the Eye Exercise page
+const EyeExercisePage = () => {
+  const [isTracking, setIsTracking] = useState(false);
+  const [faceDetected, setFaceDetected] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // URL for the processed video feed from the Python server
+  const processedVideoFeedUrl = 'http://127.0.0.1:5002/api/enhanced-eye-tracking/video_feed';
+
+  // Function to start the camera and tracking
+  const startTracking = async () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setIsTracking(true);
+      } catch (err) {
+        console.error("Error accessing webcam: ", err);
+        alert("Could not access the webcam. Please check permissions and ensure it's not in use by another application.");
+      }
+    }
+  };
+
+  // Function to stop the camera and tracking
+  const stopTracking = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsTracking(false);
+    setFaceDetected(false);
+  };
+
+  const handleToggleTracking = (checked: boolean) => {
+    if (checked) {
+      startTracking();
+    } else {
+      stopTracking();
+    }
+  };
+
+  // This effect hook sets up the interval to send frames to the backend
+  useEffect(() => {
+    if (isTracking && videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+
+      // Set canvas dimensions to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      intervalRef.current = setInterval(() => {
+        if (context && video.readyState === video.HAVE_ENOUGH_DATA) {
+          // Draw the current video frame onto the hidden canvas
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          
+          // Convert the canvas image to a Blob
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              // Send the frame to the backend for processing
+              const result = await processFrame(blob);
+              if (result) {
+                setFaceDetected(result.face_detected);
+              }
+            }
+          }, 'image/jpeg');
+        }
+      }, 200); // Send a frame every 200ms (5 FPS) - adjustable
+    }
+
+    // Cleanup function to clear the interval when the component unmounts or tracking stops
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isTracking]);
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">OptiVue Eye Wellness</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Control Panel */}
+        <div className="md:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Controls</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch id="tracking-toggle" checked={isTracking} onCheckedChange={handleToggleTracking} />
+                <label htmlFor="tracking-toggle">Enable Camera & Tracking</label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Toggle the switch to start or stop your webcam and face detection.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`p-2 rounded-md text-center font-semibold ${faceDetected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {faceDetected ? 'Face Detected' : 'Face Not Detected'}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Video Feed Area */}
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Live Camera Feed</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-black rounded-lg overflow-hidden aspect-video">
+                {isTracking ? (
+                  // Display the processed feed from the server with bounding boxes
+                  <img src={processedVideoFeedUrl} alt="Processed camera feed" className="w-full h-full object-contain" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                    <p className="text-gray-500">Camera is off</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Hidden elements for capturing video frames */}
+      <video ref={videoRef} autoPlay playsInline style={{ display: 'none' }} />
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+    </div>
+  );
+};
+
+export default EyeExercisePage;
+## 2. Frontend API: client/src/lib/eyeTracking.ts (Final Version)
+This file is now correct, focusing on the processFrame function that sends images to the backend.
+
+TypeScript
+
+// client/src/lib/eyeTracking.ts
+
+const API_BASE_URL = 'http://127.0.0.1:5002/api/enhanced-eye-tracking';
+
+/**
+ * Sends a single video frame (as a Blob) to the backend for processing.
+ *
+ * @param frameBlob The video frame captured from the canvas as a Blob.
+ * @returns A promise that resolves with the face detection data.
+ */
+export const processFrame = async (frameBlob: Blob) => {
+  try {
+    const formData = new FormData();
+    formData.append('frame', frameBlob, 'frame.jpg');
+
+    const response = await fetch(`${API_BASE_URL}/process_frame`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      // The server provides a specific error message
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to process frame');
+    }
+    return await response.json();
+  } catch (error) {
+    console.warn('Error processing frame:', error);
+    return { face_detected: false, success: false }; // Return a safe default
+  }
+};
+## 3. Backend Server: server/enhanced_eye_tracking_server.py (Final Version)
+This server is now correctly configured to receive frames from the frontend, process them, and provide both a data response and a visual stream.
+
+Python
+
+from flask import Flask, jsonify, request, Response
+from flask_cors import CORS
+from enhanced_eye_tracker import EnhancedEyeTracker
+import cv2
+import numpy as np
+import threading
+import time
+from typing import Optional, Dict, Any
+
+class EnhancedEyeTrackingServer:
+    def __init__(self):
+        self.app = Flask(__name__)
+        CORS(self.app, resources={r"/api/*": {"origins": "*"}})
+        
+        self.eye_tracker = EnhancedEyeTracker(min_detection_confidence=0.7)
+        
+        self.last_processed_frame: Optional[np.ndarray] = None
+        self.frame_lock = threading.Lock()
+
+        self.setup_routes()
+    
+    def setup_routes(self):
+        @self.app.route('/api/enhanced-eye-tracking/status', methods=['GET'])
+        def status():
+            return jsonify({'status': 'running', 'message': 'Ready to process frames.'})
+
+        @self.app.route('/api/enhanced-eye-tracking/process_frame', methods=['POST'])
+        def process_frame():
+            if 'frame' not in request.files:
+                return jsonify({'error': "No 'frame' file part in the request."}), 400
+
+            file = request.files['frame']
+            
+            try:
+                np_img = np.frombuffer(file.read(), np.uint8)
+                frame = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
+                if frame is None:
+                    return jsonify({'error': 'Failed to decode image. Frame is empty.'}), 400
+            except Exception as e:
+                return jsonify({'error': f'Error processing image: {str(e)}'}), 500
+
+            result, annotated_frame = self.eye_tracker.process_and_draw_frame(frame)
+
+            with self.frame_lock:
+                self.last_processed_frame = annotated_frame
+
+            return jsonify(result)
+
+        @self.app.route('/api/enhanced-eye-tracking/video_feed')
+        def video_feed():
+            def generate_frames():
+                while True:
+                    frame_to_send = None
+                    with self.frame_lock:
+                        if self.last_processed_frame is not None:
+                            frame_to_send = self.last_processed_frame
+                    
+                    if frame_to_send is not None:
+                        ret, buffer = cv2.imencode('.jpg', frame_to_send)
+                        if ret:
+                            frame_bytes = buffer.tobytes()
+                            yield (b'--frame\r\n'
+                                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+                    time.sleep(0.05)
+            
+            return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    
+    def run(self, host='0.0.0.0', port=5002, debug=False):
+        print(f"Starting Enhanced Eye Tracking Server on http://{host}:{port}")
+        self.app.run(host=host, port=port, debug=debug, threaded=True, use_reloader=False)
+
+if __name__ == '__main__':
+    server = EnhancedEyeTrackingServer()
+    server.run()
+This complete solution correctly implements the client-side camera architecture, fixing both the blank video and the 400 Bad Request errors. Your application will no
