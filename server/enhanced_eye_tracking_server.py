@@ -45,40 +45,50 @@ class EnhancedEyeTrackingServer:
                 time.sleep(0.1)
                 continue
             
-            ret, frame = self.cap.read()
-            if not ret or frame is None:
-                failed_reads += 1
-                print(f"Failed to capture frame ({failed_reads}/{max_failed_reads})")
+            try:
+                ret, frame = self.cap.read()
+                if not ret or frame is None:
+                    failed_reads += 1
+                    print(f"Failed to capture frame ({failed_reads}/{max_failed_reads})")
+                    
+                    if failed_reads >= max_failed_reads:
+                        print("Too many failed reads, stopping camera...")
+                        self.camera_active = False
+                        break
+                        
+                    time.sleep(0.1)
+                    continue
                 
+                # Reset failed reads counter on successful read
+                failed_reads = 0
+                
+                # Flip for a natural, mirror-like view
+                frame = cv2.flip(frame, 1)
+                
+                annotated_frame = frame
+                
+                if self.tracking_active:
+                    # This single, efficient call gets both data and the visualized frame
+                    result, annotated_frame = self.eye_tracker.process_and_draw_frame(frame)
+                    self.last_detection_result = result
+                else:
+                    # Clear old data if tracking is turned off
+                    self.last_detection_result = None
+                
+                # Safely update the frame that will be streamed to the frontend
+                with self.frame_lock:
+                    self.current_frame = annotated_frame
+                
+                time.sleep(0.033) # Maintain a steady ~30 FPS
+                
+            except Exception as e:
+                print(f"Error reading frame: {e}")
+                failed_reads += 1
                 if failed_reads >= max_failed_reads:
-                    print("Too many failed reads, stopping camera...")
                     self.camera_active = False
                     break
-                    
                 time.sleep(0.1)
-                continue
-            
-            # Reset failed reads counter on successful read
-            failed_reads = 0
-            
-            # Flip for a natural, mirror-like view
-            frame = cv2.flip(frame, 1)
-            
-            annotated_frame = frame
-            
-            if self.tracking_active:
-                # This single, efficient call gets both data and the visualized frame
-                result, annotated_frame = self.eye_tracker.process_and_draw_frame(frame)
-                self.last_detection_result = result
-            else:
-                # Clear old data if tracking is turned off
-                self.last_detection_result = None
-            
-            # Safely update the frame that will be streamed to the frontend
-            with self.frame_lock:
-                self.current_frame = annotated_frame
-            
-            time.sleep(0.033) # Maintain a steady ~30 FPS
+                
         print("Frame reading thread has stopped.")
 
     def setup_routes(self):
@@ -99,35 +109,64 @@ class EnhancedEyeTrackingServer:
             if self.camera_active:
                 return jsonify({'success': True, 'message': 'Camera is already active'})
             
-            # Try multiple camera indices for better compatibility
+            # Try different backends and camera indices for better compatibility
+            backends = [
+                (cv2.CAP_V4L2, "V4L2"),      # Linux
+                (cv2.CAP_ANY, "ANY"),         # Let OpenCV choose
+                (cv2.CAP_DSHOW, "DSHOW"),     # Windows
+                (cv2.CAP_AVFOUNDATION, "AVFoundation")  # macOS
+            ]
             camera_indices = [0, 1, 2]
-            for idx in camera_indices:
-                print(f"Trying camera index {idx}...")
-                self.cap = cv2.VideoCapture(idx)
-                if self.cap and self.cap.isOpened():
-                    # Verify we can actually read a frame
-                    ret, test_frame = self.cap.read()
-                    if ret and test_frame is not None:
-                        print(f"Camera {idx} opened successfully")
-                        self.camera_active = True
-                        self.frame_thread_active = True
-                        self.frame_thread = threading.Thread(target=self._read_frames)
-                        self.frame_thread.daemon = True
-                        self.frame_thread.start()
-                        return jsonify({'success': True, 'message': f'Camera started successfully on index {idx}'})
-                    else:
-                        self.cap.release()
-                        print(f"Camera {idx} opened but couldn't read frames")
-                else:
-                    if self.cap:
-                        self.cap.release()
-                    print(f"Failed to open camera {idx}")
+            
+            for backend, backend_name in backends:
+                for idx in camera_indices:
+                    try:
+                        print(f"Trying camera index {idx} with {backend_name} backend...")
+                        self.cap = cv2.VideoCapture(idx, backend)
+                        
+                        if self.cap and self.cap.isOpened():
+                            # Set camera properties for better performance
+                            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+                            self.cap.set(cv2.CAP_PROP_FPS, 30)
+                            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                            
+                            # Verify we can actually read a frame
+                            ret, test_frame = self.cap.read()
+                            if ret and test_frame is not None:
+                                print(f"✓ Camera {idx} opened successfully with {backend_name} backend")
+                                print(f"  Frame shape: {test_frame.shape}")
+                                
+                                self.camera_active = True
+                                self.frame_thread_active = True
+                                self.frame_thread = threading.Thread(target=self._read_frames)
+                                self.frame_thread.daemon = True
+                                self.frame_thread.start()
+                                
+                                return jsonify({
+                                    'success': True, 
+                                    'message': f'Camera started successfully (index {idx}, {backend_name})'
+                                })
+                            else:
+                                self.cap.release()
+                                print(f"  Camera {idx} opened but couldn't read frames")
+                        else:
+                            if self.cap:
+                                self.cap.release()
+                            print(f"  Failed to open camera {idx} with {backend_name}")
+                    
+                    except Exception as e:
+                        print(f"  Error with camera {idx} and {backend_name}: {e}")
+                        if self.cap:
+                            self.cap.release()
+                            self.cap = None
             
             # No camera worked
-            print("ERROR: No camera available. This may be a Replit environment without camera access.")
+            error_msg = 'No camera detected. Please ensure your webcam is connected and has the necessary permissions.'
+            print(f"ERROR: {error_msg}")
             return jsonify({
                 'success': False, 
-                'message': 'No camera detected. Camera hardware may not be available in this environment.'
+                'message': error_msg
             }), 500
 
         @self.app.route('/api/enhanced-eye-tracking/stop_camera', methods=['POST'])

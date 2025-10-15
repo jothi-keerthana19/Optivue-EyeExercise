@@ -437,6 +437,8 @@
         let pollingInterval = null;
         let exerciseInterval = null;
         let timerInterval = null;
+        let consecutiveFailures = 0;
+        const MAX_CONSECUTIVE_FAILURES = 2;
 
         // Metrics
         let focusTime = 0;
@@ -618,9 +620,6 @@
                 pollingInterval = null;
             }
         }
-
-        let consecutiveFailures = 0;
-        const MAX_CONSECUTIVE_FAILURES = 2;
 
         function handleFocusData(data) {
             const faceDetected = data.face_detected;
