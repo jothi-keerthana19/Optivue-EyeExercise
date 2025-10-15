@@ -552,6 +552,7 @@
                         videoElement = document.createElement('video');
                         videoElement.autoplay = true;
                         videoElement.playsInline = true;
+                        videoElement.muted = true;
                         videoElement.style.display = 'none';
                         document.body.appendChild(videoElement);
                     }
@@ -566,11 +567,21 @@
                     
                     videoElement.srcObject = videoStream;
                     
-                    // Wait for video to be ready before starting frame capture
+                    // Wait for video to be FULLY ready with actual data
                     await new Promise((resolve) => {
+                        const checkReady = () => {
+                            if (videoElement.readyState >= 3) { // HAVE_FUTURE_DATA or better
+                                console.log('Video element is ready with data');
+                                resolve();
+                            } else {
+                                setTimeout(checkReady, 100);
+                            }
+                        };
+                        
                         videoElement.onloadedmetadata = () => {
-                            videoElement.play();
-                            resolve();
+                            videoElement.play().then(() => {
+                                checkReady();
+                            });
                         };
                     });
                     
@@ -616,19 +627,29 @@
             frameCaptureInterval = setInterval(async () => {
                 if (!videoElement || !canvasElement || !trackingEnabled) return;
                 
-                // Check if video is ready
-                if (videoElement.readyState !== videoElement.HAVE_ENOUGH_DATA) {
+                // Double-check video is ready with actual frame data
+                if (videoElement.readyState < 3) {
+                    console.log('Video not ready yet, skipping frame');
                     return;
                 }
                 
                 try {
                     const ctx = canvasElement.getContext('2d');
+                    
+                    // Draw current video frame to canvas
                     ctx.drawImage(videoElement, 0, 0, 640, 480);
+                    
+                    // Check if we actually drew something (not just black)
+                    const imageData = ctx.getImageData(0, 0, 1, 1);
+                    if (imageData.data[0] === 0 && imageData.data[1] === 0 && imageData.data[2] === 0) {
+                        console.log('Canvas appears to be black, skipping frame');
+                        return;
+                    }
                     
                     // Convert canvas to blob and send to backend
                     canvasElement.toBlob(async (blob) => {
-                        if (!blob) {
-                            console.warn('Failed to create blob from canvas');
+                        if (!blob || blob.size === 0) {
+                            console.warn('Invalid blob created from canvas');
                             return;
                         }
                         
@@ -642,16 +663,17 @@
                             });
                             
                             if (!response.ok) {
-                                console.error('Frame processing failed:', response.status);
+                                const errorText = await response.text();
+                                console.error('Frame processing failed:', response.status, errorText);
                             }
                         } catch (error) {
                             console.error('Error sending frame:', error);
                         }
-                    }, 'image/jpeg', 0.8);
+                    }, 'image/jpeg', 0.9);
                 } catch (error) {
                     console.error('Error capturing frame:', error);
                 }
-            }, 100); // Send frames every 100ms
+            }, 200); // Send frames every 200ms
         }
 
         function stopFrameCapture() {

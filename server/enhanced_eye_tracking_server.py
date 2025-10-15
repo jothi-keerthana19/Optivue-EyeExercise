@@ -34,15 +34,23 @@ class EnhancedEyeTrackingServer:
             and returns the detection results.
             """
             if 'frame' not in request.files:
+                print("ERROR: No 'frame' in request.files")
                 return jsonify({'error': "No 'frame' file in request."}), 400
 
             file = request.files['frame']
+            
+            # Check if file has content
+            file_content = file.read()
+            if len(file_content) == 0:
+                print("ERROR: Empty file received")
+                return jsonify({'error': 'Empty frame data received'}), 400
 
             try:
-                np_img = np.frombuffer(file.read(), np.uint8)
+                np_img = np.frombuffer(file_content, np.uint8)
                 frame = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
 
                 if frame is None:
+                    print(f"ERROR: Failed to decode image. Buffer size: {len(file_content)}")
                     return jsonify({'error': 'Failed to decode image.'}), 400
 
                 # Process the frame for face detection
@@ -56,6 +64,9 @@ class EnhancedEyeTrackingServer:
                 return jsonify(result)
 
             except Exception as e:
+                print(f"ERROR processing frame: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 return jsonify({'error': f'Error processing image: {str(e)}'}), 500
 
         @self.app.route('/api/enhanced-eye-tracking/get_enhanced_gaze', methods=['GET'])
