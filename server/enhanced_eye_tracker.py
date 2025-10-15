@@ -42,14 +42,52 @@ class EnhancedEyeTracker:
             - A dictionary with detection results ('face_detected', 'success').
             - The annotated frame with a bounding box, keypoints, and score.
         """
+        # Validate frame
+        if frame is None or frame.size == 0:
+            print("ERROR: Invalid frame - frame is None or empty")
+            empty_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+            cv2.putText(empty_frame, "Invalid Frame", (50, 50),
+                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            return {'face_detected': False, 'success': False, 'error': 'Invalid frame'}, empty_frame
+        
+        if len(frame.shape) != 3 or frame.shape[2] != 3:
+            print(f"ERROR: Invalid frame shape: {frame.shape}")
+            empty_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+            cv2.putText(empty_frame, "Invalid Frame Shape", (50, 50),
+                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            return {'face_detected': False, 'success': False, 'error': 'Invalid frame shape'}, empty_frame
+        
         annotated_frame = frame.copy()
         frame_height, frame_width, _ = annotated_frame.shape
 
         # Convert the BGR image to RGB as MediaPipe expects this format
         rgb_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+        
+        # Ensure the frame is contiguous in memory (MediaPipe requirement)
+        if not rgb_frame.flags['C_CONTIGUOUS']:
+            rgb_frame = np.ascontiguousarray(rgb_frame)
+        
+        # Ensure frame is writable
+        if not rgb_frame.flags['WRITEABLE']:
+            rgb_frame = rgb_frame.copy()
 
         # Process the frame to find faces
-        results = self.face_detection.process(rgb_frame)
+        try:
+            # MediaPipe can be sensitive to data types - ensure uint8
+            if rgb_frame.dtype != np.uint8:
+                rgb_frame = rgb_frame.astype(np.uint8)
+            
+            results = self.face_detection.process(rgb_frame)
+        except ValueError as e:
+            if "Empty packets" in str(e) or "Graph has errors" in str(e):
+                print(f"MediaPipe processing error: {e}")
+                print(f"Frame info - shape: {rgb_frame.shape}, dtype: {rgb_frame.dtype}, contiguous: {rgb_frame.flags['C_CONTIGUOUS']}, writable: {rgb_frame.flags['WRITEABLE']}")
+                print(f"Frame data range: min={rgb_frame.min()}, max={rgb_frame.max()}, mean={rgb_frame.mean()}")
+                # Return a frame with error message
+                cv2.putText(annotated_frame, "MediaPipe Error - Check Console", (50, 50),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
+                return {'face_detected': False, 'success': False, 'error': str(e)}, annotated_frame
+            raise
 
         face_detected = False
 

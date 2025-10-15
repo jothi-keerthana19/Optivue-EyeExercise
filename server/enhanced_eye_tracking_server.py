@@ -39,19 +39,35 @@ class EnhancedEyeTrackingServer:
 
             file = request.files['frame']
             
-            # Check if file has content
+            # Read file content
             file_content = file.read()
             if len(file_content) == 0:
                 print("ERROR: Empty file received")
                 return jsonify({'error': 'Empty frame data received'}), 400
 
             try:
+                # Decode image from buffer
                 np_img = np.frombuffer(file_content, np.uint8)
                 frame = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
 
-                if frame is None:
-                    print(f"ERROR: Failed to decode image. Buffer size: {len(file_content)}")
+                if frame is None or frame.size == 0:
+                    print(f"ERROR: Failed to decode image. Buffer size: {len(file_content)}, np_img shape: {np_img.shape}")
                     return jsonify({'error': 'Failed to decode image.'}), 400
+                
+                # Validate frame dimensions
+                if len(frame.shape) != 3 or frame.shape[2] != 3:
+                    print(f"ERROR: Invalid decoded frame shape: {frame.shape}")
+                    return jsonify({'error': f'Invalid frame shape: {frame.shape}'}), 400
+                
+                print(f"Successfully decoded frame: shape={frame.shape}, dtype={frame.dtype}, contiguous={frame.flags['C_CONTIGUOUS']}")
+                
+                # Ensure frame is writable and contiguous
+                if not frame.flags['WRITEABLE']:
+                    frame = frame.copy()
+                if not frame.flags['C_CONTIGUOUS']:
+                    frame = np.ascontiguousarray(frame)
+                
+                print(f"Frame prepared for processing: writable={frame.flags['WRITEABLE']}, contiguous={frame.flags['C_CONTIGUOUS']}")
 
                 # Process the frame for face detection
                 result, annotated_frame = self.eye_tracker.process_and_draw_frame(frame)
