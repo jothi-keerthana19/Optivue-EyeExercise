@@ -565,22 +565,45 @@
                         document.body.appendChild(canvasElement);
                     }
                     
+                    // Get context with willReadFrequently for better performance
+                    const ctx = canvasElement.getContext('2d', { willReadFrequently: true });
+                    
                     videoElement.srcObject = videoStream;
                     
-                    // Wait for video to be FULLY ready with actual data
+                    // Wait for video to be FULLY ready with actual pixel data
                     await new Promise((resolve) => {
-                        const checkReady = () => {
-                            if (videoElement.readyState >= 3) { // HAVE_FUTURE_DATA or better
-                                console.log('Video element is ready with data');
+                        let framesChecked = 0;
+                        const maxFrameChecks = 30; // Wait up to 3 seconds
+                        
+                        const checkForActualFrames = () => {
+                            if (!canvasElement) return;
+                            
+                            const ctx = canvasElement.getContext('2d');
+                            ctx.drawImage(videoElement, 0, 0, 640, 480);
+                            
+                            // Check if we have actual pixel data (not just black)
+                            const imageData = ctx.getImageData(320, 240, 1, 1); // Check center pixel
+                            const pixelSum = imageData.data[0] + imageData.data[1] + imageData.data[2];
+                            
+                            if (pixelSum > 0) {
+                                // We have actual video data!
+                                console.log('Video element has actual frame data');
                                 resolve();
                             } else {
-                                setTimeout(checkReady, 100);
+                                framesChecked++;
+                                if (framesChecked >= maxFrameChecks) {
+                                    console.warn('Video started but frames may still be initializing');
+                                    resolve(); // Continue anyway after timeout
+                                } else {
+                                    setTimeout(checkForActualFrames, 100);
+                                }
                             }
                         };
                         
                         videoElement.onloadedmetadata = () => {
                             videoElement.play().then(() => {
-                                checkReady();
+                                // Wait a bit for frames to start flowing
+                                setTimeout(checkForActualFrames, 300);
                             });
                         };
                     });
@@ -634,14 +657,22 @@
                 }
                 
                 try {
-                    const ctx = canvasElement.getContext('2d');
+                    const ctx = canvasElement.getContext('2d', { willReadFrequently: true });
                     
                     // Draw current video frame to canvas
                     ctx.drawImage(videoElement, 0, 0, 640, 480);
                     
                     // Check if we actually drew something (not just black)
-                    const imageData = ctx.getImageData(0, 0, 1, 1);
-                    if (imageData.data[0] === 0 && imageData.data[1] === 0 && imageData.data[2] === 0) {
+                    // Sample a few pixels to be more robust
+                    let totalPixelValue = 0;
+                    for (let i = 0; i < 5; i++) {
+                        const x = Math.floor(Math.random() * 640);
+                        const y = Math.floor(Math.random() * 480);
+                        const imageData = ctx.getImageData(x, y, 1, 1);
+                        totalPixelValue += imageData.data[0] + imageData.data[1] + imageData.data[2];
+                    }
+                    
+                    if (totalPixelValue === 0) {
                         console.log('Canvas appears to be black, skipping frame');
                         return;
                     }
