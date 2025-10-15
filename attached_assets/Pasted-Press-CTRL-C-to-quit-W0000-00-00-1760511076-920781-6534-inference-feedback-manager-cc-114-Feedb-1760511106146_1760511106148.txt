@@ -1,0 +1,76 @@
+Press CTRL+C to quit
+W0000 00:00:1760511076.920781    6534 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 985-157-497
+172.31.103.226 - - [15/Oct/2025 06:51:17] "GET / HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:17] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:17] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:17] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:17] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+127.0.0.1 - - [15/Oct/2025 06:51:17] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.103.226 - - [15/Oct/2025 06:51:17] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.103.226 - - [15/Oct/2025 06:51:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 06:51:17] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.103.226 - - [15/Oct/2025 06:51:17] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:22] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:22] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:24] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:24] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:24] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:24] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:25] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:25] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:25] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:25] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:26] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:26] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:26] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:26] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:27] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:27] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:27] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:27] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:28] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:28] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:28] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:28] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+Available files: []
+127.0.0.1 - - [15/Oct/2025 06:51:30] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
+172.31.103.226 - - [15/Oct/2025 06:51:30] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 400 -
