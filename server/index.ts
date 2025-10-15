@@ -13,7 +13,13 @@ const trackingServer = spawn('python', ['server/eye_tracking_server.py'], {
   stdio: 'inherit'
 });
 
-// Wait for tracking server to start
+// Start Enhanced Eye Tracking Server (port 5002)
+console.log('Starting Enhanced Eye Tracking Server on port 5002...');
+const enhancedTrackingServer = spawn('python', ['server/enhanced_eye_tracking_server.py'], {
+  stdio: 'inherit'
+});
+
+// Wait for tracking servers to start
 setTimeout(() => {
   // Start Main Application (port 5000)
   console.log('Starting Main Application on port 5000...');
@@ -23,17 +29,21 @@ setTimeout(() => {
 
   console.log('============================================================');
   console.log('Application started!');
-  console.log('Open your browser to: http://localhost:5000');
+  console.log('Eye Tracking Server: http://localhost:5001');
+  console.log('Enhanced Eye Tracking Server: http://localhost:5002');
+  console.log('Main Application: http://localhost:5000');
   console.log('============================================================');
 
   // Handle shutdown
   process.on('SIGTERM', () => {
     trackingServer.kill();
+    enhancedTrackingServer.kill();
     mainApp.kill();
   });
 
   process.on('SIGINT', () => {
     trackingServer.kill();
+    enhancedTrackingServer.kill();
     mainApp.kill();
   });
 }, 2000);

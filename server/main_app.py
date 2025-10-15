@@ -14,8 +14,9 @@ app = Flask(__name__,
             static_folder='../static')
 CORS(app)
 
-# Tracking server URL
+# Tracking server URLs
 TRACKING_SERVER_URL = 'http://localhost:5001'
+ENHANCED_TRACKING_SERVER_URL = 'http://localhost:5002'
 
 
 @app.route('/')
@@ -28,6 +29,57 @@ def index():
 def serve_static(path):
     """Serve static files."""
     return send_from_directory('../static', path)
+
+
+# Proxy routes to enhanced tracking server
+@app.route('/api/enhanced-eye-tracking/<path:path>', methods=['GET', 'POST'])
+def proxy_to_enhanced_tracking_server(path):
+    """
+    Reverse proxy to forward API requests to the enhanced tracking server.
+    """
+    try:
+        url = f"{ENHANCED_TRACKING_SERVER_URL}/api/enhanced-eye-tracking/{path}"
+        
+        if request.method == 'GET':
+            # Special handling for video feed
+            if path == 'video_feed':
+                resp = requests.get(url, stream=True)
+                return Response(
+                    resp.iter_content(chunk_size=1024),
+                    content_type=resp.headers.get('Content-Type')
+                )
+            
+            # Regular GET request
+            resp = requests.get(url, params=request.args)
+            return Response(
+                resp.content,
+                status=resp.status_code,
+                headers=dict(resp.headers)
+            )
+        
+        elif request.method == 'POST':
+            resp = requests.post(
+                url,
+                json=request.get_json() if request.is_json else None,
+                data=request.form if request.form else None
+            )
+            return Response(
+                resp.content,
+                status=resp.status_code,
+                headers=dict(resp.headers)
+            )
+    
+    except requests.exceptions.ConnectionError:
+        return {
+            'success': False,
+            'message': 'Enhanced tracking server not available. Please ensure it is running on port 5002.'
+        }, 503
+    
+    except Exception as e:
+        return {
+            'success': False,
+            'message': str(e)
+        }, 500
 
 
 # Proxy routes to tracking server
