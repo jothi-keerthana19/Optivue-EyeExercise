@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Exercise Tracker - Focus Training</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-blue: hsl(210, 100%, 60%);
+            --success-green: hsl(140, 60%, 45%);
+            --warning-amber: hsl(38, 90%, 55%);
+            --alert-red: hsl(0, 75%, 60%);
+            --bg-light: hsl(210, 20%, 98%);
+            --text-primary: hsl(220, 15%, 20%);
+            --text-secondary: hsl(220, 10%, 50%);
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+        }
+
+        /* Exercise Area */
+        #exercise-area {
+            min-height: 500px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #exercise-area.active {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        /* Exercise Guide Overlay (Repurposed Calibration) */
+        #exercise-guide-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: none;
+            z-index: 100;
+            border-radius: 12px;
+        }
+
+        #exercise-guide-overlay.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Calibration Point (Now Exercise Guide Dot) */
+        #calibration-point {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, hsl(0, 75%, 60%) 0%, hsl(0, 85%, 50%) 100%);
+            position: absolute;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+            border: 3px solid white;
+            transition: all 0.4s ease-in-out;
+            z-index: 101;
+            display: none;
+        }
+
+        #calibration-point.active {
+            display: block;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.15); }
+        }
+
+        /* Camera Container */
+        #camera-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 240px;
+            border: 3px solid var(--primary-blue);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            background: #000;
+            z-index: 1000;
+            display: none;
+        }
+
+        #camera-container.active {
+            display: block;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        /* Notification Alert */
+        #notification-alert {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: none;
+            min-width: 400px;
+        }
+
+        #notification-alert.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Exercise List */
+        .exercise-item {
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .exercise-item:hover {
+            background-color: hsl(210, 15%, 95%);
+            transform: translateX(4px);
+        }
+
+        .exercise-item.active {
+            background-color: var(--primary-blue);
+            color: white;
+            border-left: 4px solid hsl(210, 100%, 45%);
+        }
+
+        /* Summary Cards */
+        .summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-metric {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .summary-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons */
+        .btn-custom {
+            min-height: 48px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        /* Ready State Display */
+        #ready-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 2rem;
+        }
+
+        /* Focus Status Badge */
+        #focus-status-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 50;
+            backdrop-filter: blur(8px);
+        }
+
+        #focus-status-badge.focused {
+            background-color: rgba(42, 157, 143, 0.9);
+            color: white;
+        }
+
+        #focus-status-badge.not-focused {
+            background-color: rgba(231, 111, 81, 0.9);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification Alert -->
+    <div id="notification-alert" class="alert alert-warning alert-dismissible fade" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <span id="notification-message">User not detected. Please stay in the camera view.</span>
+        <button type="button" class="btn-close" onclick="hideNotification()"></button>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <i class="bi bi-eye-fill" style="font-size: 3rem; color: var(--primary-blue);"></i>
+                <h1 class="mt-2 mb-2">Eye Exercise Tracker</h1>
+                <p class="text-secondary">Focus training exercises to reduce eye strain and improve eye health</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Exercise List Sidebar -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Exercise Types</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="exercise-item p-3" data-exercise="9-point" onclick="selectExercise('9-point')">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-grid-3x3 me-3" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <h6 class="mb-0">9-Point Focus</h6>
+                                    <small class="text-muted">Follow the dot through 9 positions</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exercise-item p-3" data-exercise="circular" onclick="selectExercise('circular')">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-circle me-3" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <h6 class="mb-0">Circular Motion</h6>
+                                    <small class="text-muted">Follow circular eye movement</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exercise-item p-3" data-exercise="horizontal" onclick="selectExercise('horizontal')">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-arrows-expand me-3" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <h6 class="mb-0">Horizontal Sweep</h6>
+                                    <small class="text-muted">Left to right eye movement</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="trackingToggle" onchange="toggleTracking()">
+                            <label class="form-check-label" for="trackingToggle">
+                                <i class="bi bi-camera-video me-1"></i>Enable Focus Tracking
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button id="startBtn" class="btn btn-primary btn-custom" onclick="startExercise()" disabled>
+                                <i class="bi bi-play-fill me-2"></i>Start Exercise
+                            </button>
+                            <button id="pauseBtn" class="btn btn-warning btn-custom" onclick="pauseExercise()" disabled>
+                                <i class="bi bi-pause-fill me-2"></i>Pause
+                            </button>
+                            <button id="stopBtn" class="btn btn-danger btn-custom" onclick="stopExercise()" disabled>
+                                <i class="bi bi-stop-fill me-2"></i>Stop
+                            </button>
+                        </div>
+
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Exercise Timer: <span id="timer-display" class="fw-bold">00:00</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercise Area -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-bullseye me-2"></i>Exercise Area</h5>
+                        <span class="badge bg-secondary" id="status-badge">Ready</span>
+                    </div>
+                    <div class="card-body p-0" style="position: relative;">
+                        <div id="exercise-area">
+                            <!-- Ready State -->
+                            <div id="ready-state">
+                                <i class="bi bi-eye-fill" style="font-size: 4rem; color: var(--primary-blue);"></i>
+                                <h3 class="mt-3">Ready to Begin</h3>
+                                <p class="text-secondary">Select an exercise and enable focus tracking to start</p>
+                            </div>
+
+                            <!-- Exercise Guide Overlay -->
+                            <div id="exercise-guide-overlay">
+                                <div id="calibration-point"></div>
+                                <div id="guide-text" class="text-center" style="position: absolute; bottom: 2rem;">
+                                    <h4>Follow the dot with your eyes</h4>
+                                    <p class="text-muted">Keep your head steady</p>
+                                </div>
+                            </div>
+
+                            <!-- Focus Status Badge -->
+                            <div id="focus-status-badge" style="display: none;">
+                                <i class="bi bi-eye-fill me-1"></i>
+                                <span id="focus-status-text">Focused</span>
+                            </div>
+
+                            <!-- Summary Container (shown after exercise) -->
+                            <div id="summary-container" style="display: none; padding: 2rem;">
+                                <h3 class="text-center mb-4">Exercise Complete!</h3>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="summary-card text-center">
+                                            <i class="bi bi-percent" style="font-size: 2rem; color: var(--primary-blue);"></i>
+                                            <div class="summary-metric" id="focus-performance">0%</div>
+                                            <div class="summary-label">Focus Performance</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="summary-card text-center">
+                                            <i class="bi bi-clock-history" style="font-size: 2rem; color: var(--success-green);"></i>
+                                            <div class="summary-metric" id="focus-time">0:00</div>
+                                            <div class="summary-label">Total Focus Time</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="summary-card text-center">
+                                            <i class="bi bi-trophy" style="font-size: 2rem; color: var(--warning-amber);"></i>
+                                            <div class="summary-metric" id="best-streak">0s</div>
+                                            <div class="summary-label">Best Focus Streak</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="summary-card text-center">
+                                            <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: var(--alert-red);"></i>
+                                            <div class="summary-metric" id="distractions-count">0</div>
+                                            <div class="summary-label">Distractions</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <button class="btn btn-primary btn-custom" onclick="resetExercise()">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Start New Exercise
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Preview -->
+    <div id="camera-container">
+        <img id="video" src="/api/video_feed" alt="Camera Feed">
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Application State
+        const AppState = {
+            IDLE: 'idle',
+            RUNNING: 'running',
+            PAUSED: 'paused',
+            COMPLETED: 'completed'
+        };
+
+        let currentState = AppState.IDLE;
+        let selectedExercise = null;
+        let trackingEnabled = false;
+        let pollingInterval = null;
+        let exerciseInterval = null;
+        let timerInterval = null;
+
+        // Metrics
+        let focusTime = 0;  // in deciseconds (0.1s)
+        let distractions = 0;
+        let currentFocusStreak = 0;
+        let maxFocusStreak = 0;
+        let totalExerciseDuration = 0;
+        let wasFocused = true;
+        let exerciseStartTime = 0;
+
+        // Exercise Patterns
+        const exercisePatterns = {
+            '9-point': [
+                { x: 20, y: 20 },   // Top-left
+                { x: 50, y: 20 },   // Top-center
+                { x: 80, y: 20 },   // Top-right
+                { x: 80, y: 50 },   // Middle-right
+                { x: 80, y: 80 },   // Bottom-right
+                { x: 50, y: 80 },   // Bottom-center
+                { x: 20, y: 80 },   // Bottom-left
+                { x: 20, y: 50 },   // Middle-left
+                { x: 50, y: 50 }    // Center
+            ],
+            'circular': [
+                { x: 50, y: 20 }, { x: 65, y: 25 }, { x: 75, y: 35 },
+                { x: 80, y: 50 }, { x: 75, y: 65 }, { x: 65, y: 75 },
+                { x: 50, y: 80 }, { x: 35, y: 75 }, { x: 25, y: 65 },
+                { x: 20, y: 50 }, { x: 25, y: 35 }, { x: 35, y: 25 }
+            ],
+            'horizontal': [
+                { x: 20, y: 50 }, { x: 35, y: 50 }, { x: 50, y: 50 },
+                { x: 65, y: 50 }, { x: 80, y: 50 }, { x: 65, y: 50 },
+                { x: 50, y: 50 }, { x: 35, y: 50 }, { x: 20, y: 50 }
+            ]
+        };
+
+        // Select Exercise
+        function selectExercise(exercise) {
+            selectedExercise = exercise;
+            
+            // Update UI
+            document.querySelectorAll('.exercise-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-exercise="${exercise}"]`).classList.add('active');
+            
+            // Enable start button if tracking is enabled
+            if (trackingEnabled) {
+                document.getElementById('startBtn').disabled = false;
+            }
+        }
+
+        // Toggle Tracking
+        async function toggleTracking() {
+            const toggle = document.getElementById('trackingToggle');
+            trackingEnabled = toggle.checked;
+
+            if (trackingEnabled) {
+                // Start camera and tracking
+                try {
+                    await fetch('/api/start_camera', { method: 'POST' });
+                    await fetch('/api/start_tracking', { method: 'POST' });
+                    
+                    // Show camera preview
+                    document.getElementById('camera-container').classList.add('active');
+                    
+                    // Start polling
+                    startFocusPolling();
+                    
+                    // Enable start button if exercise selected
+                    if (selectedExercise) {
+                        document.getElementById('startBtn').disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error starting tracking:', error);
+                    toggle.checked = false;
+                    trackingEnabled = false;
+                }
+            } else {
+                // Stop tracking
+                await fetch('/api/stop_camera', { method: 'POST' });
+                stopFocusPolling();
+                document.getElementById('camera-container').classList.remove('active');
+                document.getElementById('startBtn').disabled = true;
+            }
+        }
+
+        // Start Focus Polling
+        function startFocusPolling() {
+            if (pollingInterval) return;
+            
+            pollingInterval = setInterval(async () => {
+                if (currentState === AppState.RUNNING) {
+                    try {
+                        const response = await fetch('/api/get_enhanced_gaze');
+                        const data = await response.json();
+                        handleFocusData(data);
+                    } catch (error) {
+                        console.error('Polling error:', error);
+                    }
+                }
+            }, 300); // Poll every 300ms
+        }
+
+        // Stop Focus Polling
+        function stopFocusPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        // Handle Focus Data
+        function handleFocusData(data) {
+            const faceDetected = data.face_detected;
+            const statusBadge = document.getElementById('focus-status-badge');
+            const statusText = document.getElementById('focus-status-text');
+
+            if (faceDetected) {
+                // User is focused
+                focusTime++;
+                currentFocusStreak++;
+                
+                // Update max streak
+                if (currentFocusStreak > maxFocusStreak) {
+                    maxFocusStreak = currentFocusStreak;
+                }
+
+                // Update UI
+                statusBadge.className = 'focused';
+                statusText.textContent = 'Face Detected';
+                hideNotification();
+                wasFocused = true;
+            } else {
+                // User lost focus
+                if (wasFocused) {
+                    // This is a new distraction
+                    distractions++;
+                    currentFocusStreak = 0;
+                    wasFocused = false;
+                }
+
+                // Show notification and pause
+                showNotification('User not detected. Please stay in the camera view.');
+                pauseExercise();
+                
+                // Update UI
+                statusBadge.className = 'not-focused';
+                statusText.textContent = 'Face Lost';
+            }
+        }
+
+        // Start Exercise
+        async function startExercise() {
+            if (!selectedExercise) {
+                alert('Please select an exercise first');
+                return;
+            }
+
+            if (currentState === AppState.PAUSED) {
+                // Resume from pause
+                currentState = AppState.RUNNING;
+                document.getElementById('status-badge').textContent = 'Running';
+                document.getElementById('status-badge').className = 'badge bg-success';
+                document.getElementById('pauseBtn').disabled = false;
+                document.getElementById('startBtn').disabled = true;
+                continueExercise();
+                return;
+            }
+
+            // Start new exercise
+            currentState = AppState.RUNNING;
+            resetMetrics();
+
+            // Update UI
+            document.getElementById('ready-state').style.display = 'none';
+            document.getElementById('summary-container').style.display = 'none';
+            document.getElementById('exercise-area').classList.add('active');
+            document.getElementById('exercise-guide-overlay').classList.add('active');
+            document.getElementById('focus-status-badge').style.display = 'block';
+            document.getElementById('status-badge').textContent = 'Running';
+            document.getElementById('status-badge').className = 'badge bg-success';
+
+            // Update buttons
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = false;
+
+            // Start countdown
+            await countdown();
+
+            // Start exercise
+            exerciseStartTime = Date.now();
+            startTimer();
+            runExercisePattern();
+        }
+
+        // Countdown
+        function countdown() {
+            return new Promise((resolve) => {
+                const guideText = document.getElementById('guide-text');
+                let count = 3;
+
+                const countInterval = setInterval(() => {
+                    if (count > 0) {
+                        guideText.innerHTML = `<h1>${count}</h1><p>Get ready...</p>`;
+                        count--;
+                    } else {
+                        clearInterval(countInterval);
+                        guideText.innerHTML = '<h4>Follow the dot with your eyes</h4><p class="text-muted">Keep your head steady</p>';
+                        resolve();
+                    }
+                }, 1000);
+            });
+        }
+
+        // Run Exercise Pattern
+        async function runExercisePattern() {
+            const pattern = exercisePatterns[selectedExercise];
+            const dot = document.getElementById('calibration-point');
+            const area = document.getElementById('exercise-area');
+            const areaRect = area.getBoundingClientRect();
+
+            dot.classList.add('active');
+
+            for (let i = 0; i < pattern.length; i++) {
+                if (currentState !== AppState.RUNNING) {
+                    break;
+                }
+
+                const point = pattern[i];
+                const x = (point.x / 100) * areaRect.width;
+                const y = (point.y / 100) * areaRect.height;
+
+                dot.style.left = `${x}px`;
+                dot.style.top = `${y}px`;
+
+                // Hold at position for 5 seconds
+                await sleep(5000);
+            }
+
+            // Exercise complete
+            if (currentState === AppState.RUNNING) {
+                completeExercise();
+            }
+        }
+
+        // Continue Exercise (after pause)
+        function continueExercise() {
+            // Resume exercise pattern from where it left off
+            runExercisePattern();
+        }
+
+        // Pause Exercise
+        function pauseExercise() {
+            if (currentState === AppState.RUNNING) {
+                currentState = AppState.PAUSED;
+                document.getElementById('status-badge').textContent = 'Paused';
+                document.getElementById('status-badge').className = 'badge bg-warning';
+                document.getElementById('pauseBtn').disabled = true;
+                document.getElementById('startBtn').disabled = false;
+                stopTimer();
+            }
+        }
+
+        // Stop Exercise
+        function stopExercise() {
+            currentState = AppState.IDLE;
+            resetExercise();
+        }
+
+        // Complete Exercise
+        function completeExercise() {
+            currentState = AppState.COMPLETED;
+            stopTimer();
+            
+            // Hide exercise overlay
+            document.getElementById('exercise-guide-overlay').classList.remove('active');
+            document.getElementById('calibration-point').classList.remove('active');
+            document.getElementById('focus-status-badge').style.display = 'none';
+            
+            // Calculate total duration
+            totalExerciseDuration = Math.floor((Date.now() - exerciseStartTime) / 100); // in deciseconds
+
+            // Show summary
+            showSummary();
+        }
+
+        // Show Summary
+        function showSummary() {
+            // Calculate metrics
+            const focusPerformance = totalExerciseDuration > 0 
+                ? Math.round((focusTime / totalExerciseDuration) * 100)
+                : 0;
+            
+            const focusTimeSeconds = Math.floor(focusTime / 10);
+            const focusTimeMinutes = Math.floor(focusTimeSeconds / 60);
+            const focusTimeRemainder = focusTimeSeconds % 60;
+            const focusTimeStr = `${focusTimeMinutes}:${focusTimeRemainder.toString().padStart(2, '0')}`;
+            
+            const maxStreakSeconds = Math.floor(maxFocusStreak / 10);
+
+            // Update UI
+            document.getElementById('focus-performance').textContent = `${focusPerformance}%`;
+            document.getElementById('focus-time').textContent = focusTimeStr;
+            document.getElementById('best-streak').textContent = `${maxStreakSeconds}s`;
+            document.getElementById('distractions-count').textContent = distractions;
+
+            // Show summary container
+            document.getElementById('summary-container').style.display = 'block';
+            document.getElementById('status-badge').textContent = 'Completed';
+            document.getElementById('status-badge').className = 'badge bg-success';
+        }
+
+        // Reset Exercise
+        function resetExercise() {
+            currentState = AppState.IDLE;
+            resetMetrics();
+
+            // Reset UI
+            document.getElementById('exercise-area').classList.remove('active');
+            document.getElementById('exercise-guide-overlay').classList.remove('active');
+            document.getElementById('calibration-point').classList.remove('active');
+            document.getElementById('focus-status-badge').style.display = 'none';
+            document.getElementById('ready-state').style.display = 'flex';
+            document.getElementById('summary-container').style.display = 'none';
+            document.getElementById('status-badge').textContent = 'Ready';
+            document.getElementById('status-badge').className = 'badge bg-secondary';
+
+            // Reset buttons
+            document.getElementById('startBtn').disabled = !selectedExercise || !trackingEnabled;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+
+            // Reset timer display
+            document.getElementById('timer-display').textContent = '00:00';
+            stopTimer();
+        }
+
+        // Reset Metrics
+        function resetMetrics() {
+            focusTime = 0;
+            distractions = 0;
+            currentFocusStreak = 0;
+            maxFocusStreak = 0;
+            totalExerciseDuration = 0;
+            wasFocused = true;
+        }
+
+        // Timer Functions
+        function startTimer() {
+            let seconds = 0;
+            timerInterval = setInterval(() => {
+                if (currentState === AppState.RUNNING) {
+                    seconds++;
+                    const minutes = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    document.getElementById('timer-display').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // Notification Functions
+        function showNotification(message) {
+            const alert = document.getElementById('notification-alert');
+            document.getElementById('notification-message').textContent = message;
+            alert.classList.add('show');
+        }
+
+        function hideNotification() {
+            const alert = document.getElementById('notification-alert');
+            alert.classList.remove('show');
+        }
+
+        // Utility
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Eye Exercise Tracker initialized');
+        });
+    </script>
+</body>
+</html>
