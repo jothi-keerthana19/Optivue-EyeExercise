@@ -1,0 +1,124 @@
+Objective
+The primary goal is to build a web-based eye exercise application that uses a simple, robust focus detection system. The "calibration" UI will be repurposed as the visual guide for the exercises. Focus will be determined solely by the presence of a user's face in the camera window. The system will provide real-time notifications for loss of focus and display a detailed performance summary upon completion.
+
+System Architecture
+The application will use a two-server model to separate the user interface from the computer vision processing.
+
+Main Web Application (Frontend Server): This server's responsibilities are to handle user authentication, serve the HTML eye exercise page, and act as a reverse proxy that forwards all API requests from the browser to the backend tracking server.
+
+Tracking API Server (Backend Server): This is a background service dedicated to computer vision. Its responsibilities are to manage the webcam feed, process video frames to detect a face, and provide a simple API for the main application to query this status.
+
+Backend Implementation Plan
+Task 1: Create the Simplified Focus Detection Module
+This module will contain only the logic for face detection.
+
+Initialize the MediaPipe Face Mesh model with its most basic settings, as it will only be used as a face detector.
+
+Create a primary process_frame method that accepts a single video frame.
+
+Inside this method, run the face mesh model on the frame.
+
+The method's sole logic will be to check if the model's results contain any face landmarks.
+
+The method must return a simple JSON object with a single boolean flag: {'face_detected': True} if landmarks are found, and {'face_detected': False} otherwise.
+
+Crucially, all previous logic for head pose (diversion) and Eye Aspect Ratio (drowsiness) must be removed.
+
+Task 2: Build the Simplified API Server
+This server will expose the face detection functionality.
+
+Create an API-only Flask server. It must not serve any HTML pages.
+
+Implement the following API endpoints:
+
+POST /start_camera: Initializes and opens the user's webcam.
+
+POST /start_tracking: Enables the processing of video frames.
+
+POST /stop_camera: Releases the webcam and stops processing.
+
+GET /get_enhanced_gaze: This is the main polling endpoint. It will call the simplified process_frame method and return its simple JSON response (e.g., {'success': True, 'face_detected': True}).
+
+GET /video_feed: Streams the live camera feed for the frontend preview.
+
+Frontend Implementation Plan
+Task 1: Structure the HTML Page
+Create the eye_exercises.html file using HTML and Bootstrap. It must not use a <canvas> element.
+
+Exercise Area: A central div that will contain all exercise-related visuals.
+
+Exercise List: A side panel where users can select the desired exercise type (e.g., "9-Point Focus").
+
+Control Panel: A section with "Start," "Pause," and "Stop" buttons, and a toggle switch to "Enable Focus Tracking."
+
+Camera Preview: A container for the live video feed.
+
+Exercise Guide Overlay: The repurposed "calibration overlay." This is a full-screen div that will contain a single, movable dot (#calibration-point). This will be the visual guide for all exercises.
+
+Notification Alert: A hidden div that will be used to display a warning message when the user's face is not detected.
+
+Task 2: Implement the JavaScript Logic
+This script will manage the state, user interaction, and all visual updates.
+
+State Management: Define variables to track the application's current state (IDLE, RUNNING, PAUSED, COMPLETED).
+
+Metric Tracking: Initialize variables to track the summary metrics during an exercise: focusTime, distractions, currentFocusStreak, and maxFocusStreak.
+
+Event Handling: Attach event listeners to the exercise list, control buttons, and the focus tracking toggle.
+
+Focus Polling: Create a function that uses setInterval to call the backend's /get_enhanced_gaze endpoint every 250-500 milliseconds, but only when an exercise is in the RUNNING state.
+
+Real-time Feedback and Metric Calculation: Create a handler function that is called by the polling loop and receives the face_detected flag.
+
+If face_detected is true:
+
+Increment the focusTime and currentFocusStreak variables.
+
+Ensure the notification alert is hidden.
+
+If face_detected is false:
+
+Display the notification alert with a message like "User not detected. Please stay in the camera view."
+
+Automatically pause the exercise.
+
+If the user was previously focused, this marks the end of a focus streak. Compare currentFocusStreak with maxFocusStreak and update if necessary.
+
+Reset currentFocusStreak to zero.
+
+Increment the distractions counter.
+
+Exercise Flow:
+
+Define the exercise patterns as JavaScript arrays of coordinates (e.g., a 9-point pattern for the "9-Point Focus" exercise).
+
+When an exercise starts, show the "Exercise Guide Overlay."
+
+Create an async function that iterates through the coordinate array for the selected exercise. In each iteration, it will move the #calibration-point div to the next position and use await with a setTimeout to hold the dot at that position for a set duration (e.g., 5 seconds).
+
+Summary Screen: Create a function that is called when the exercise loop completes. This function will:
+
+Calculate the final Focus Performance percentage using the formula (focusTime / totalExerciseDuration) * 100.
+
+Format the focusTime and maxFocusStreak metrics into user-friendly strings (e.g., "mm:ss" for time, "Xs" for seconds).
+
+Dynamically generate the HTML for the summary screen, which will contain four cards displaying Focus Performance, Focus Time, Best Streak, and Distractions.
+
+Display this summary inside the main exercise area.
+
+User Workflow
+The user navigates to the eye exercise page.
+
+They select the "9-Point Focus" exercise from the list.
+
+They click the "Enable Focus Tracking" toggle, which starts the camera and displays the video preview.
+
+They click the "Start" button. A 3-second countdown appears.
+
+The exercise begins. A red dot appears at the first position in the 9-point pattern.
+
+The user follows the dot with their eyes. The system monitors for their face in the background. If they move out of the camera's view, a warning appears, and the exercise pauses.
+
+The dot moves to the next position every 5 seconds until all 9 points have been displayed.
+
+The exercise ends, and the summary screen is shown with their performance metrics.

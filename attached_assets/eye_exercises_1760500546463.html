@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Exercise Tracker with Real Eye Tracking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #3a86ff;
+            --secondary-color: #2b2d42;
+            --accent-color: #48cae4;
+            --success-color: #2a9d8f;
+            --warning-color: #e9c46a;
+            --danger-color: #e76f51;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+            --card-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        #exercise-area {
+            min-height: 500px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            transition: background-color var(--transition-speed);
+            overflow: visible;
+            position: relative;
+            padding: 15px;
+        }
+
+        #exercise-area.active {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        #animation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            transition: all var(--transition-speed);
+        }
+
+        #target {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #dc3545 0%, #c82333 100%);
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.6);
+            transition: all 0.3s ease;
+            position: absolute;
+            z-index: 5;
+            display: none;
+            border: 3px solid white;
+            cursor: none;
+        }
+
+        #target.target-focused {
+            background: radial-gradient(circle, #28a745 0%, #1e7e34 100%);
+            box-shadow: 0 0 30px rgba(40, 167, 69, 0.8);
+            transform: scale(1.2);
+            animation: success-pulse 0.5s ease-in-out;
+        }
+
+        @keyframes success-pulse {
+            0%, 100% { transform: scale(1.2); }
+            50% { transform: scale(1.4); }
+        }
+
+        #gaze-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 0, 0.9);
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+            z-index: 1000;
+            pointer-events: none;
+            display: none;
+            position: fixed; /* Use fixed for viewport positioning */
+            transform: translate(-50%, -50%);
+            border: 2px solid #fff;
+            transition: all 0.1s ease;
+        }
+
+        .list-group-item {
+            border-radius: 10px !important;
+            margin-bottom: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.125);
+            transition: all var(--transition-speed);
+            cursor: pointer;
+        }
+
+        .list-group-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .list-group-item.active {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            transition: all var(--transition-speed);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #2a75e6;
+            border-color: #2a75e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(58, 134, 255, 0.3);
+        }
+
+        #camera-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            width: 640px; /* Increased width for medium size */
+            height: 480px; /* Increased height for medium size */
+            border: 3px solid var(--primary-color);
+            border-radius: 15px 15px 0 0;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            background: white;
+            z-index: 1000;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transform: scaleX(-1); /* Mirror the video feed */
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            border-radius: 15px;
+        }
+
+        #calibration-overlay {
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            text-align: center;
+        }
+
+        #ready-overlay {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+        }
+
+        #calibration-point {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 25px rgba(220, 53, 69, 0.8);
+            border: 3px solid white;
+            transition: all 0.3s ease;
+            animation: calibration-pulse 1.5s infinite;
+        }
+
+        @keyframes calibration-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        #countdown-number {
+            font-size: 6rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: countdown-pulse 1s ease-in-out;
+        }
+
+        @keyframes countdown-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        #focus-indicator {
+            transition: all 0.3s ease;
+            z-index: 50;
+            opacity: 0.95;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            min-width: 200px;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            border: none;
+            transition: all var(--transition-speed);
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1rem 1.25rem;
+        }
+
+        .exercise-icon {
+            font-size: 1.5rem;
+            margin-right: 12px;
+        }
+
+        /* Add visual feedback for clickable elements */
+        .clickable-button, .list-group-item {
+            cursor: pointer !important;
+        }
+
+        .clickable-button:hover, .list-group-item:hover {
+            opacity: 0.9;
+        }
+
+        /* Add visual feedback for active buttons */
+        .btn:disabled {
+            opacity: 0.6;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            #exercise-area { min-height: 400px; }
+            #camera-container { width: 150px !important; height: 120px !important; }
+            #countdown-number { font-size: 4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-eye-fill" style="font-size: 3rem; color: var(--primary-color);"></i>
+                </div>
+                <h1 class="mb-3">Eye Exercise Tracker</h1>
+                <p class="lead">Advanced eye tracking exercises to reduce strain and improve eye health.</p>
+                <div class="d-flex justify-content-center gap-3 mb-3">
+                    <span class="badge bg-light text-dark p-2"><i class="bi bi-clock me-1"></i> Timed Sessions</span>
+                    <span class="badge bg-light text-dark p-2"><i class="bi bi-bullseye me-1"></i> Real Eye Tracking</span>
+                    <span class="badge bg-light text-dark p-2"><i class="bi bi-graph-up me-1"></i> Live Feedback</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Exercise Area</h5>
+                        <div>
+                            <span class="badge bg-primary" id="exercise-timer">00:00</span>
+                            <span class="badge bg-secondary" id="exercise-status">Ready</span>
+                        </div>
+                    </div>
+                    <div class="card-body" id="exercise-area">
+                        <div id="animation">
+                            <div class="display-1 mb-4">
+                                <i class="bi bi-eye-fill" style="color: var(--primary-color); animation: pulse 2s infinite;"></i>
+                            </div>
+                            <h3 class="mb-3">Select an exercise to begin</h3>
+                            <p class="text-muted">Choose from our scientifically designed eye exercises</p>
+                            <p class="small text-info"><i class="bi bi-info-circle me-1"></i>Enable eye tracking for best results</p>
+                        </div>
+                        
+                        <div id="target"></div>
+                    
+                        <!-- Gaze Cursor -->
+                        <div id="gaze-cursor" style="position: absolute; width: 20px; height: 20px; background-color: rgba(255, 255, 0, 0.8); border-radius: 50%; display: none; z-index: 1000; border: 2px solid #fff; box-shadow: 0 0 10px rgba(255, 255, 0, 0.6); transition: all 0.1s ease; pointer-events: none;"></div>
+
+                        <!-- Gaze Tracking Status -->
+                        <div id="gaze-status" class="position-absolute top-0 start-0 m-2 p-2 bg-dark text-white rounded" style="display: none; z-index: 50; font-size: 0.8rem;">
+                            <i class="bi bi-eye me-1"></i>Gaze Tracking Active
+                        </div>
+                        
+                        <!-- Exercise Guide Overlay -->
+                        <div id="exercise-guide-overlay" class="overlay" style="display: none;">
+                            <h3 class="mb-3"><i class="bi bi-info-circle me-2"></i>Exercise Guide</h3>
+                            <div id="exercise-guide-content" class="text-center mb-4 px-4">
+                                <p>Get ready for your eye exercise!</p>
+                                <p>Follow the moving target with your eyes and maintain focus.</p>
+                                <small class="text-info">Keep your head steady and follow the target smoothly.</small>
+                            </div>
+                            <div class="position-absolute bottom-0 start-0 end-0 p-3">
+                                <div class="progress mb-2" style="height: 10px;">
+                                    <div id="guide-progress-bar" class="progress-bar bg-info" style="width: 0%"></div>
+                                </div>
+                                <p class="text-center small mb-0">
+                                    Preparing exercise...<br>
+                                    <span id="guide-instruction">Focus on maintaining steady gaze</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Ready Countdown Overlay -->
+                        <div id="ready-overlay" class="overlay" style="display: none;">
+                            <h1 id="countdown-number">3</h1>
+                            <p class="mt-3 h5">Get ready to focus...</p>
+                        </div>
+                        
+                        <!-- Focus Indicator -->
+                        <div id="focus-indicator" class="position-absolute top-0 end-0 m-3 p-3 bg-white border" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <i id="focus-icon" class="bi bi-eye-fill me-2" style="font-size: 1.2rem;"></i>
+                                <div>
+                                    <div id="focus-message" style="font-weight: 600;">Focus on target</div>
+                                    <div id="focus-accuracy" class="small">Accuracy: 0%</div>
+                                    <div id="gaze-accuracy" class="small">Gaze Accuracy: 0%</div>
+                                    <div id="focus-time-display" class="small">Focus Time: 0s</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Distraction Alert -->
+                        <div id="distraction-alert" class="position-absolute top-50 start-50 translate-middle p-3 bg-danger text-white rounded shadow-lg" style="display: none; z-index: 1001; min-width: 300px;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <div style="font-weight: 600;">Attention Required!</div>
+                                    <div id="distraction-message" class="small">Please refocus on the exercise area</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Metrics Panel -->
+                        <div id="enhanced-metrics" class="position-absolute bottom-0 start-0 m-3 p-3 bg-white border rounded shadow-sm" style="display: none; z-index: 50; min-width: 250px;">
+                            <div class="small mb-2" style="font-weight: 600;">Enhanced Metrics</div>
+                            <div id="boundary-violations" class="small">Boundary Violations: 0</div>
+                            <div id="area-violations" class="small">Area Violations: 0</div>
+                            <div id="max-focus-streak" class="small">Max Focus Streak: 0s</div>
+                            <div id="distraction-count" class="small">Distractions: 0</div>
+                        </div>
+                        
+                        <!-- Progress Indicator -->
+                        <div id="progress-container" class="position-absolute bottom-0 start-0 end-0 p-3" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">Exercise Progress</small>
+                                <span id="exercise-progress" class="badge bg-primary">0%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div id="progress-bar" class="progress-bar bg-primary" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Instructions</h5>
+                    </div>
+                    <div class="card-body" id="exercise-instructions">
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <i class="bi bi-lightbulb-fill me-3" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <p class="mb-2"><strong>How to use:</strong></p>
+                                    <ol class="mb-2">
+                                        <li>Enable eye tracking toggle below</li>
+                                        <li>Allow camera permission when prompted</li>
+                                        <li>Select an exercise from the list</li>
+                                        <li>Complete calibration by looking at red dots</li>
+                                        <li>Follow the target with your eyes during exercise</li>
+                                    </ol>
+                                    <p class="mb-0 small text-muted">Green indicator = Good focus | Red indicator = Need to refocus</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Exercise Selection</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group" id="exercise-list">
+                            <div class="list-group-item" data-exercise="center-focus">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-bullseye exercise-icon" style="color: var(--primary-color);"></i>
+                                        <div>
+                                            <h6 class="mb-1">Center Focus</h6>
+                                            <p class="mb-0 small text-muted">Focus on a stationary center target</p>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">2 min</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item" data-exercise="figure-eight">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-infinity exercise-icon" style="color: var(--success-color);"></i>
+                                        <div>
+                                            <h6 class="mb-1">Figure Eight</h6>
+                                            <p class="mb-0 small text-muted">Follow a figure-8 infinity pattern</p>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">3 min</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item" data-exercise="horizontal-shift">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-arrow-left-right exercise-icon" style="color: var(--warning-color);"></i>
+                                        <div>
+                                            <h6 class="mb-1">Horizontal Shift</h6>
+                                            <p class="mb-0 small text-muted">Shift focus left and right</p>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">2 min</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item" data-exercise="vertical-shift">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-arrow-up-down exercise-icon" style="color: #6f42c1;"></i>
+                                        <div>
+                                            <h6 class="mb-1">Vertical Shift</h6>
+                                            <p class="mb-0 small text-muted">Shift focus up and down</p>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">2 min</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item" data-exercise="circular-motion">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-arrow-clockwise exercise-icon" style="color: var(--accent-color);"></i>
+                                        <div>
+                                            <h6 class="mb-1">Circular Motion</h6>
+                                            <p class="mb-0 small text-muted">Follow a circular path</p>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">3 min</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item" data-exercise="zoom-focus">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-zoom-in exercise-icon" style="color: var(--danger-color);"></i>
+                                        <div>
+                                            <h6 class="mb-1">Zoom Focus</h6>
+                                            <p class="mb-0 small text-muted">Focus on expanding/contracting target</p>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">2 min</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item" data-exercise="diagonal-sweep">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-slash-square exercise-icon" style="color: #fd7e14;"></i>
+                                        <div>
+                                            <h6 class="mb-1">Diagonal Sweep</h6>
+                                            <p class="mb-0 small text-muted">Track diagonal movements</p>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">3 min</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Controls</h5>
+                    </div>
+                    <div class="card-body">
+                <div class="form-check form-switch d-flex align-items-center p-3 bg-light rounded mb-3">
+                            <input class="form-check-input me-3" type="checkbox" id="camera-tracking" style="transform: scale(1.2);">
+                            <label class="form-check-label fw-semibold" for="camera-tracking">
+                                <i class="bi bi-camera-video me-2 text-primary"></i> Enable Eye Tracking
+                            </label>
+                        </div>
+
+                        <button id="start-exercise" class="btn btn-primary mb-3 w-100" disabled>
+                            <i class="bi bi-play-fill me-2"></i> Start Exercise
+                        </button>
+                        <button id="pause-exercise" class="btn btn-secondary mb-3 w-100" disabled>
+                            <i class="bi bi-pause-fill me-2"></i> Pause
+                        </button>
+                        <button id="stop-exercise" class="btn btn-danger mb-3 w-100" disabled>
+                            <i class="bi bi-stop-fill me-2"></i> Stop
+                        </button>
+                        <div id="tracking-status" class="alert alert-info small mb-0" style="display: none;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <span id="tracking-message">Eye tracking ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Preview -->
+    <div id="camera-container" style="position: fixed; bottom: 20px; right: 20px; width: 640px; height: 480px; display: none; z-index: 1000; border: 3px solid var(--primary-color); border-radius: 15px 15px 0 0; overflow: hidden; box-shadow: var(--card-shadow); background: white;">
+        <div class="d-flex justify-content-between align-items-center bg-primary text-white p-2">
+            <small><i class="bi bi-camera-video-fill me-1"></i> Eye Tracking</small>
+            <button type="button" class="btn-close btn-close-white btn-sm" id="close-camera"></button>
+        </div>
+        <div id="camera-preview" style="width: 100%; height: calc(100% - 30px); background-color: #000;"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Eye tracking backend connection -->
+    <script>
+        // Eye tracking backend URL - Use the main Flask app as proxy
+        const EYE_TRACKING_BACKEND = '/api/enhanced-eye-tracking';
+
+        // Function to initialize eye tracking backend connection
+        async function initializeEyeTrackingBackend() {
+            console.log('Attempting to connect to eye tracking backend through proxy');
+
+            // Configure fetch with proper options for cross-origin requests
+            const fetchOptions = {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer'
+            };
+
+            // Retry configuration
+            const MAX_RETRIES = 3;
+            const RETRY_DELAY = 1000; // 1 second
+
+            for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                try {
+                    console.log(`Connection attempt ${attempt} to ${EYE_TRACKING_BACKEND}/status`);
+
+                    // Add timeout to fetch request
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+                    const response = await fetch(`${EYE_TRACKING_BACKEND}/status`, {
+                        ...fetchOptions,
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const status = await response.json();
+
+                    if (status.status === 'running') {
+                        console.log('Eye tracking backend connected successfully through proxy');
+                        initializeBackendTrackingObjects();
+                        return; // Success, exit function
+                    } else {
+                        console.warn(`Eye tracking backend not ready (attempt ${attempt}/${MAX_RETRIES})`);
+                    }
+                } catch (error) {
+                    console.error(`Attempt ${attempt} failed:`, error.message || error);
+
+                    // If this wasn't the last attempt, wait before retrying
+                    if (attempt < MAX_RETRIES) {
+                        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                    } else {
+                        // Final fallback: initialize backend objects anyway
+                        console.warn('Max retries reached. Forcing real backend connection.');
+                        showStatusMessage('Connection failed. Trying to initialize anyway...', 'warning');
+                    }
+                }
+            }
+
+            // If we've exhausted all retries, force initialization
+            initializeBackendTrackingObjects();
+        }
+
+        // Helper function to show status messages in UI
+        function showStatusMessage(message, type = 'info') {
+            const statusElement = document.getElementById('tracking-message');
+            const statusContainer = document.getElementById('tracking-status');
+
+            if (statusElement && statusContainer) {
+                statusElement.textContent = message;
+                statusContainer.style.display = 'block';
+
+                // Set color based on type
+                statusContainer.className = `alert alert-${type} small mb-0`;
+            }
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (statusContainer) {
+                    statusContainer.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        // Load eye tracking when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, connecting to eye tracking backend through proxy');
+            // Remove the timeout fallback to mock tracking
+            initializeEyeTrackingBackend();
+        });
+        // Ensure UI is initialized even if backend connection fails
+        setTimeout(function() {
+            if (typeof initializeApp === 'function' && typeof elements !== 'undefined' && !elements.exerciseList) {
+                console.log('Forcing UI initialization');
+                initializeApp();
+            }
+        }, 1500);
+
+        console.log('Script started loading');
+        
+        // Flag to track if webgazer has been initialized
+        window.webgazerInitialized = false;
+
+        // Eye tracking objects will be initialized after backend connection
+        let realEnhancedTracker;
+
+        // Backend tracking implementation
+        function initializeBackendTrackingObjects() {
+            const EYE_TRACKING_BACKEND = '/api/enhanced-eye-tracking';
+
+            realEnhancedTracker = {
+                init: async function() {
+                    console.log('Backend tracker init through proxy');
+                    try {
+                        const response = await fetch(`${EYE_TRACKING_BACKEND}/start_camera`, { method: 'POST' });
+                        const result = await response.json();
+                        console.log('Camera start result:', result);
+
+                        // Check if we're in simulation mode and warn the user
+                        if (result.simulation === true) {
+                            console.warn('WARNING: Camera started in simulation mode!');
+                            showStatusMessage('WARNING: Using simulated camera. Connect a real camera for accurate tracking.', 'warning');
+                        }
+
+                        return this;
+                    } catch (error) {
+                        console.error('Error starting camera:', error);
+                        throw error;
+                    }
+                },
+                setGazeListener: function(callback) {
+                    console.log('Backend tracker setGazeListener through proxy');
+                    this.gazeCallback = callback;
+
+                    // Start polling for focus data
+                    this.gazePolling = setInterval(async () => {
+                        if (this.gazeCallback && eyeTrackingEnabled) {
+                            try {
+                                const controller = new AbortController();
+                                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+                                const rect = elements.exerciseArea.getBoundingClientRect();
+                                const width = rect.width;
+                                const height = rect.height;
+                                const response = await fetch(`${EYE_TRACKING_BACKEND}/get_enhanced_gaze?width=${width}&height=${height}`, {
+                                    signal: controller.signal
+                                });
+
+                                clearTimeout(timeoutId);
+
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+
+                                const data = await response.json();
+
+                                if (data.success) {
+                                    const { is_diverted, is_drowsy, head_yaw, avg_ear } = data;
+
+                                    // Use the new flags to control UI
+                                    if (is_diverted || is_drowsy) {
+                                        let message = is_diverted ? 'Look at the screen!' : 'Drowsiness detected!';
+                                        showDistractionWarning(message);
+                                        // Optionally pause the exercise
+                                        if (currentState === STATE.RUNNING) {
+                                            togglePause();
+                                        }
+                                    } else {
+                                        hideDistractionWarning();
+                                    }
+
+                                    // The original callback is no longer strictly necessary for gaze,
+                                    // but we can call it with dummy data if other parts of the app expect it.
+                                    this.gazeCallback({ x: 0.5, y: 0.5 }, Date.now());
+
+                                } else {
+                                    console.error('Backend returned an error:', data.message);
+                                    showDistractionWarning('Tracking data unavailable.');
+                                }
+                            } catch (error) {
+                                console.error('Error getting focus data:', error);
+                                showDistractionWarning('Connection to tracker lost.');
+                            }
+                        }
+                    }, 500); // Poll every 500ms
+
+                    return this;
+                },
+                begin: async function() {
+                    console.log('Backend tracker begin through proxy');
+                    try {
+                        const response = await fetch(`${EYE_TRACKING_BACKEND}/start_tracking`, { method: 'POST' });
+                        const result = await response.json();
+                        console.log('Tracking start result:', result);
+
+                        // Check if we're in simulation mode and warn the user
+                        if (result.simulation === true) {
+                            console.warn('WARNING: Tracking started in simulation mode!');
+                            showStatusMessage('WARNING: Tracking started in simulation mode. Connect a real camera for accurate tracking.', 'warning');
+                        }
+
+                        return this;
+                    } catch (error) {
+                        console.error('Error starting tracking:', error);
+                        throw error;
+                    }
+                },
+                showPredictionPoints: function(show) {
+                    console.log('Backend tracker showPredictionPoints:', show);
+                    return this;
+                },
+                clearCalibration: function() {
+                    console.log('Backend tracker clearCalibration');
+                    return this;
+                },
+                end: function() {
+                    console.log('Backend tracker end');
+                    // Stop polling
+                    if (this.gazePolling) {
+                        clearInterval(this.gazePolling);
+                    }
+                    return this;
+                },
+                pause: function() {
+                    console.log('Backend tracker pause');
+                    // Stop polling
+                    if (this.gazePolling) {
+                        clearInterval(this.gazePolling);
+                    }
+                    return this;
+                },
+                resume: function() {
+                    console.log('Backend tracker resume');
+                    // Restart polling if it was stopped
+                    if (!this.gazePolling) {
+                        this.setGazeListener(this.gazeCallback);
+                    }
+                    return this;
+                },
+                setCameraParams: function(params) {
+                    console.log('Backend tracker setCameraParams:', params);
+                    return this;
+                },
+                setRegression: function(regression) {
+                    console.log('Backend tracker setRegression:', regression);
+                    return this;
+                },
+                setTracker: function(tracker) {
+                    console.log('Backend tracker setTracker:', tracker);
+                    return this;
+                },
+                setParams: function(params) {
+                    console.log('Backend tracker setParams:', params);
+                    return this;
+                },
+                getCurrentPrediction: function() {
+                    // Return current prediction (this would need to be implemented properly)
+                    return {x: window.innerWidth / 2, y: window.innerHeight / 2};
+                },
+                // Calibration functions
+                calibrate: async function(calibrationData) {
+                    try {
+                        const response = await fetch(`${EYE_TRACKING_BACKEND}/calibrate`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                calibration_data: calibrationData
+                            })
+                        });
+                        const result = await response.json();
+                        console.log('Calibration result:', result);
+                        return result;
+                    } catch (error) {
+                        console.error('Error during calibration:', error);
+                        throw error;
+                    }
+                }
+            };
+
+            console.log('Backend tracking objects initialized through proxy');
+
+            // Initialize the page after backend is connected
+            initializeApp();
+        }
+        
+        function initializeWebGazerObjects(useSimulatedOnly = false) {
+            // ALWAYS use real backend tracking - no mock tracking
+            console.log('Initializing real backend tracking (mock tracking disabled)');
+            initializeBackendTrackingObjects();
+            return;
+        }
+
+        console.log('Webgazer objects initialized');
+
+        // Add STATE constants
+        const STATE = {
+            IDLE: 'idle',
+            CALIBRATING: 'calibrating',
+            READY: 'ready',
+            RUNNING: 'running',
+            PAUSED: 'paused',
+            COMPLETED: 'completed'
+        };
+
+        console.log('STATE constants defined');
+
+        // Add global variables
+        let currentState = STATE.IDLE;
+        let currentExercise = null;
+        let eyeTrackingEnabled = false;
+        let gazeTrackingEnabled = false;
+        let webgazerInitialized = false;
+        let exerciseTimer = null;
+        let animationFrame = null;
+        let remainingTime = 0;
+        let exerciseStartTime = 0;
+        let totalGazeSamples = 0;
+        let focusedGazeSamples = 0;
+        let lastGazeData = { x: 0, y: 0 };
+        let currentCalibrationPoint = 0;
+        let videoFeed = null;
+        let focusAccuracy = 0;
+        let gazeAccuracy = 0;
+        let calibrationSamples = []; // Array to collect gaze samples during calibration
+        let calibrationData = []; // Array to store {target_x, target_y, avg_gaze_x, avg_gaze_y} per point
+        let gazePollingInterval = null; // For gaze tracking polling
+
+        // Enhanced focus detection variables
+        let distractionTimer = 0;
+        let distractionWarningThreshold = 3000; // 3 seconds
+        let isDistracted = false;
+        let lastDistractionWarning = 0;
+        let actualFocusTime = 0; // milliseconds actually focused
+        let totalExerciseTime = 0; // total exercise time in milliseconds
+        let boundaryViolations = 0;
+        let exerciseAreaViolations = 0;
+        let focusStreaks = []; // track consecutive focus periods
+        let currentFocusStreak = 0;
+        let maxFocusStreak = 0;
+        let lastFocusState = false;
+        let minimumAccuracyRequired = 60; // minimum accuracy % to complete exercise
+
+        // Smoothing variables
+        let gazeHistory = [];
+        const SMOOTHING_BUFFER_SIZE = 5;
+        // Weights for Weighted Moving Average. More recent points get higher weights.
+        const SMOOTHING_WEIGHTS = [0.1, 0.15, 0.2, 0.25, 0.3];
+
+        console.log('Global variables initialized');
+
+        // Exercise definitions
+        const EXERCISES = {
+            'center-focus': {
+                id: 'center-focus',
+                name: 'Center Focus',
+                duration: 120, // 2 minutes
+                focusRadius: 50,
+                calibrationPattern: [
+                    { x: 0.5, y: 0.5 }
+                ]
+            },
+            'figure-eight': {
+                id: 'figure-eight',
+                name: 'Figure Eight',
+                duration: 180, // 3 minutes
+                focusRadius: 60,
+                calibrationPattern: [
+                    { x: 0.3, y: 0.3 },
+                    { x: 0.7, y: 0.3 },
+                    { x: 0.5, y: 0.5 },
+                    { x: 0.3, y: 0.7 },
+                    { x: 0.7, y: 0.7 }
+                ]
+            },
+            'horizontal-shift': {
+                id: 'horizontal-shift',
+                name: 'Horizontal Shift',
+                duration: 120, // 2 minutes
+                focusRadius: 50,
+                calibrationPattern: [
+                    { x: 0.2, y: 0.5 },
+                    { x: 0.5, y: 0.5 },
+                    { x: 0.8, y: 0.5 }
+                ]
+            },
+            'vertical-shift': {
+                id: 'vertical-shift',
+                name: 'Vertical Shift',
+                duration: 120, // 2 minutes
+                focusRadius: 50,
+                calibrationPattern: [
+                    { x: 0.5, y: 0.2 },
+                    { x: 0.5, y: 0.5 },
+                    { x: 0.5, y: 0.8 }
+                ]
+            },
+            'circular-motion': {
+                id: 'circular-motion',
+                name: 'Circular Motion',
+                duration: 180, // 3 minutes
+                focusRadius: 60,
+                calibrationPattern: [
+                    { x: 0.3, y: 0.3 },
+                    { x: 0.7, y: 0.3 },
+                    { x: 0.7, y: 0.7 },
+                    { x: 0.3, y: 0.7 },
+                    { x: 0.5, y: 0.5 }
+                ]
+            },
+            'zoom-focus': {
+                id: 'zoom-focus',
+                name: 'Zoom Focus',
+                duration: 120, // 2 minutes
+                focusRadius: 40,
+                calibrationPattern: [
+                    { x: 0.5, y: 0.5 }
+                ]
+            },
+            'diagonal-sweep': {
+                id: 'diagonal-sweep',
+                name: 'Diagonal Sweep',
+                duration: 180, // 3 minutes
+                focusRadius: 60,
+                calibrationPattern: [
+                    { x: 0.2, y: 0.2 },
+                    { x: 0.8, y: 0.2 },
+                    { x: 0.5, y: 0.5 },
+                    { x: 0.2, y: 0.8 },
+                    { x: 0.8, y: 0.8 }
+                ]
+            }
+        };
+
+        console.log('EXERCISES object defined');
+
+        // DOM elements object - will be initialized after DOM is loaded
+        let elements = {};
+
+        console.log('Elements object declared');
+
+        // Initialize the page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing app');
+            // Small delay to ensure all elements are ready
+            setTimeout(initializeApp, 100);
+        });
+
+        // Ensure initializeApp is called even if DOMContentLoaded doesn't fire
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            console.log('Document already ready, initializing app');
+            setTimeout(initializeApp, 100);
+        }
+
+        // Fallback initialization after 500ms
+        setTimeout(function() {
+            if (typeof elements === 'undefined' || !elements.exerciseList || !elements.startBtn) {
+                console.log('Fallback initialization after 500ms');
+                initializeElementsAndListeners();
+            }
+        }, 500);
+
+        // Additional fallback after 1000ms
+        setTimeout(function() {
+            if (typeof elements === 'undefined' || !elements.exerciseList || !elements.startBtn) {
+                console.log('Additional fallback initialization after 1000ms');
+                initializeElementsAndListeners();
+            }
+        }, 1000);
+
+        // Final fallback after 2000ms
+        setTimeout(function() {
+            if (typeof elements === 'undefined' || !elements.exerciseList || !elements.startBtn) {
+                console.log('Final fallback initialization after 2000ms');
+                initializeElementsAndListeners();
+            }
+        }, 2000);
+
+        function initializeApp() {
+            console.log('Initializing app');
+            // Initialize DOM elements
+            initializeElements();
+            
+            // Initialize event listeners
+            initializeEventListeners();
+            updateUI();
+            
+            // Retry initialization if elements are not found
+            if (!elements.exerciseList || !elements.startBtn) {
+                console.log('Elements not found, retrying in 100ms');
+                setTimeout(initializeElementsAndListeners, 100);
+            }
+        }
+
+        function initializeElementsAndListeners() {
+            initializeElements();
+            initializeEventListeners();
+            updateUI();
+            
+            // Try one more time after a short delay
+            setTimeout(() => {
+                if (!elements.exerciseList || !elements.startBtn) {
+                    initializeElements();
+                    initializeEventListeners();
+                    updateUI();
+                }
+            }, 200);
+        }
+
+        // Enhanced button initialization with better retry mechanism
+        function initializeButtonWithRetry(buttonKey, handler) {
+            if (elements[buttonKey]) {
+                console.log(`Adding click listener to ${buttonKey}`);
+                // Ensure we remove any existing event listeners to prevent duplicates
+                elements[buttonKey].removeEventListener('click', handler);
+                elements[buttonKey].addEventListener('click', handler);
+                elements[buttonKey].style.cursor = 'pointer';
+                
+                // Add visual feedback that button is clickable
+                elements[buttonKey].classList.add('clickable-button');
+                
+                // Add additional visual feedback
+                elements[buttonKey].style.border = '2px solid #3a86ff';
+                elements[buttonKey].style.boxShadow = '0 0 5px rgba(58, 134, 255, 0.5)';
+            } else {
+                console.warn(`${buttonKey} not found, will retry`);
+                // Retry in a moment
+                setTimeout(() => {
+                    // Try to find the element directly
+                    const element = document.getElementById(buttonKey.replace('Btn', '-exercise'));
+                    if (element) {
+                        element.removeEventListener('click', handler);
+                        element.addEventListener('click', handler);
+                        element.style.cursor = 'pointer';
+                        element.classList.add('clickable-button');
+                        element.style.border = '2px solid #3a86ff';
+                        element.style.boxShadow = '0 0 5px rgba(58, 134, 255, 0.5)';
+                        // Update the elements object
+                        elements[buttonKey] = element;
+                    }
+                }, 200);
+            }
+        }
+
+        function initializeEventListeners() {
+            console.log('Initializing event listeners');
+            
+            // Try to initialize exercise items
+            if (elements.exerciseList) {
+                const exerciseItems = elements.exerciseList.querySelectorAll('.list-group-item');
+                console.log('Found', exerciseItems.length, 'exercise items');
+                exerciseItems.forEach((item, index) => {
+                    console.log('Adding click listener to exercise item', index);
+                    // Remove any existing listeners first
+                    item.removeEventListener('click', handleExerciseClick);
+                    item.addEventListener('click', handleExerciseClick);
+                    // Add visual feedback that the item is clickable
+                    item.style.cursor = 'pointer';
+                    // Add a data attribute to help with debugging
+                    item.setAttribute('data-initialized', 'true');
+                    // Add additional visual feedback
+                    item.style.border = '1px solid #3a86ff';
+                });
+            } else {
+                console.warn('exerciseList not found, will retry');
+                // Retry in a moment
+                setTimeout(() => {
+                    // Try to find the element directly
+                    const exerciseList = document.getElementById('exercise-list');
+                    if (exerciseList) {
+                        const exerciseItems = exerciseList.querySelectorAll('.list-group-item');
+                        exerciseItems.forEach((item, index) => {
+                            item.removeEventListener('click', handleExerciseClick);
+                            item.addEventListener('click', handleExerciseClick);
+                            item.style.cursor = 'pointer';
+                            item.setAttribute('data-initialized', 'true');
+                            item.style.border = '1px solid #3a86ff';
+                        });
+                        // Update the elements object
+                        elements.exerciseList = exerciseList;
+                    }
+                }, 200);
+            }
+
+            // Control buttons - initialize with retries
+            initializeButtonWithRetry('startBtn', handleStartClick);
+            initializeButtonWithRetry('pauseBtn', handlePauseClick);
+            initializeButtonWithRetry('stopBtn', handleStopClick);
+            
+            // Camera toggle
+            if (elements.cameraToggle) {
+                elements.cameraToggle.removeEventListener('change', handleCameraToggleChange);
+                elements.cameraToggle.addEventListener('change', handleCameraToggleChange);
+            }
+
+
+
+            // Close camera button
+            if (elements.closeCamera) {
+                elements.closeCamera.removeEventListener('click', handleCloseCameraClick);
+                elements.closeCamera.addEventListener('click', handleCloseCameraClick);
+                elements.closeCamera.style.cursor = 'pointer';
+            }
+            
+        console.log('Event listeners initialized');
+        }
+
+        function initializeElements() {
+            // Initialize all elements at once
+            elements = {
+                exerciseArea: document.getElementById('exercise-area'),
+                exerciseList: document.getElementById('exercise-list'),
+                exerciseTimer: document.getElementById('exercise-timer'),
+                exerciseStatus: document.getElementById('exercise-status'),
+                animation: document.getElementById('animation'),
+                target: document.getElementById('target'),
+                exerciseGuideOverlay: document.getElementById('exercise-guide-overlay'),
+                exerciseGuideContent: document.getElementById('exercise-guide-content'),
+                guideProgressBar: document.getElementById('guide-progress-bar'),
+                guideInstruction: document.getElementById('guide-instruction'),
+                gazeDot: document.getElementById('gaze-dot'),
+                readyOverlay: document.getElementById('ready-overlay'),
+                focusIndicator: document.getElementById('focus-indicator'),
+                focusIcon: document.getElementById('focus-icon'),
+                focusMessage: document.getElementById('focus-message'),
+                focusAccuracy: document.getElementById('focus-accuracy'),
+                gazeAccuracyElement: document.getElementById('gaze-accuracy'),
+                focusTimeDisplay: document.getElementById('focus-time-display'),
+                distractionAlert: document.getElementById('distraction-alert'),
+                distractionMessage: document.getElementById('distraction-message'),
+                enhancedMetrics: document.getElementById('enhanced-metrics'),
+                boundaryViolations: document.getElementById('boundary-violations'),
+                areaViolations: document.getElementById('area-violations'),
+                maxFocusStreak: document.getElementById('max-focus-streak'),
+                distractionCount: document.getElementById('distraction-count'),
+                progressContainer: document.getElementById('progress-container'),
+                progressBar: document.getElementById('progress-bar'),
+                exerciseProgress: document.getElementById('exercise-progress'),
+                exerciseInstructions: document.getElementById('exercise-instructions'),
+                cameraToggle: document.getElementById('camera-tracking'),
+
+                gazeCursor: document.getElementById('gaze-cursor'),
+                gazeStatus: document.getElementById('gaze-status'),
+                startBtn: document.getElementById('start-exercise'),
+                pauseBtn: document.getElementById('pause-exercise'),
+                stopBtn: document.getElementById('stop-exercise'),
+                trackingStatus: document.getElementById('tracking-status'),
+                trackingMessage: document.getElementById('tracking-message'),
+                cameraContainer: document.getElementById('camera-container'),
+                closeCamera: document.getElementById('close-camera'),
+                countdownNumber: document.getElementById('countdown-number'),
+                toastContainer: document.getElementById('toast-container'),
+                cameraPreview: document.getElementById('camera-preview')
+            };
+            
+        console.log('Elements initialized:', Object.keys(elements).filter(key => elements[key] !== null).length, 'elements found');
+            
+            // If critical elements are missing, try to find them directly
+            if (!elements.exerciseList) {
+                console.warn('exercise-list not found, trying direct query');
+                elements.exerciseList = document.querySelector('#exercise-list');
+            }
+            
+            if (!elements.startBtn) {
+                console.warn('start-exercise not found, trying direct query');
+                elements.startBtn = document.querySelector('#start-exercise');
+            }
+            
+            if (!elements.pauseBtn) {
+                console.warn('pause-exercise not found, trying direct query');
+                elements.pauseBtn = document.querySelector('#pause-exercise');
+            }
+            
+            if (!elements.stopBtn) {
+                console.warn('stop-exercise not found, trying direct query');
+                elements.stopBtn = document.querySelector('#stop-exercise');
+            }
+            
+            if (!elements.cameraToggle) {
+                console.warn('camera-tracking not found, trying direct query');
+                elements.cameraToggle = document.querySelector('#camera-tracking');
+            }
+        }
+
+        // Separate handler functions to make debugging easier
+        function handleExerciseClick(event) {
+            console.log('Exercise item clicked');
+            const exerciseId = this.getAttribute('data-exercise');
+            console.log('Selected exercise:', exerciseId);
+            // Ensure elements are initialized
+            if (typeof elements === 'undefined' || !elements.exerciseList) {
+                initializeElements();
+            }
+            selectExercise(exerciseId);
+        }
+
+        async function handleStartClick(event) {
+            console.log('Start button clicked');
+            // Ensure elements are initialized
+            if (typeof elements === 'undefined' || !elements.startBtn) {
+                initializeElements();
+            }
+            await startExercise();
+        }
+
+        function handlePauseClick(event) {
+            console.log('Pause button clicked');
+            // Ensure elements are initialized
+            if (typeof elements === 'undefined' || !elements.pauseBtn) {
+                initializeElements();
+            }
+            togglePause();
+        }
+
+        function handleStopClick(event) {
+            console.log('Stop button clicked');
+            // Ensure elements are initialized
+            if (typeof elements === 'undefined' || !elements.stopBtn) {
+                initializeElements();
+            }
+            stopExerciseProper();
+        }
+
+        async function handleCameraToggleChange(event) {
+            console.log('Camera toggle changed, checked:', this.checked);
+            eyeTrackingEnabled = this.checked;
+            if (eyeTrackingEnabled) {
+                if (elements.trackingStatus && elements.trackingMessage) {
+                    elements.trackingStatus.style.display = 'block';
+                    elements.trackingMessage.textContent = 'Initializing Eye Tracking...';
+                }
+                if (!webgazerInitialized) {
+                    try {
+                        await initializeEyeTracking();
+                    } catch (error) {
+                        console.error("Failed to initialize eye tracking on toggle", error);
+                        showToast('Failed to start eye tracking. Please check camera and permissions.', 'Error', 'danger');
+                        // Uncheck the toggle if initialization fails
+                        if (elements.cameraToggle) {
+                            elements.cameraToggle.checked = false;
+                        }
+                        eyeTrackingEnabled = false;
+                        if (elements.trackingStatus) {
+                            elements.trackingStatus.style.display = 'none';
+                        }
+                    }
+                }
+                // Show the green gaze dot when eye tracking is enabled
+                if (elements.gazeDot) {
+                    elements.gazeDot.style.display = 'block';
+                    elements.gazeDot.style.backgroundColor = 'rgba(0, 255, 0, 0.9)';
+                    elements.gazeDot.style.boxShadow = '0 0 15px rgba(0, 255, 0, 0.9)';
+                    elements.gazeDot.style.left = '50%';
+                    elements.gazeDot.style.top = '50%';
+                }
+            } else {
+                if (elements.trackingStatus) elements.trackingStatus.style.display = 'none';
+                if (webgazerInitialized && realEnhancedTracker) {
+                    try {
+                        await realEnhancedTracker.end();
+                        if (elements.cameraContainer) {
+                            elements.cameraContainer.style.display = 'none';
+                        }
+                        if(elements.cameraPreview) {
+                            elements.cameraPreview.innerHTML = '';
+                        }
+                    } catch (e) {
+                        console.warn('Error ending webgazer:', e);
+                    }
+                    webgazerInitialized = false;
+                }
+                // Hide the gaze dot when eye tracking is disabled
+                if (elements.gazeDot) {
+                    elements.gazeDot.style.display = 'none';
+                }
+
+                // Stop gaze polling
+                stopGazePolling();
+
+                // Hide gaze elements
+                if (elements.gazeCursor) {
+                    elements.gazeCursor.style.display = 'none';
+                }
+                if (elements.gazeStatus) {
+                    elements.gazeStatus.style.display = 'none';
+                }
+            }
+        }
+
+        function handleCloseCameraClick(event) {
+            console.log('Close camera button clicked');
+            if (elements.cameraContainer) {
+                elements.cameraContainer.style.display = 'none';
+            }
+        }
+
+        async function handleGazeToggleChange(event) {
+            console.log('Gaze tracking toggle changed, checked:', this.checked);
+            gazeTrackingEnabled = this.checked;
+
+            if (gazeTrackingEnabled) {
+                // Enable gaze cursor and status
+                if (elements.gazeCursor) {
+                    elements.gazeCursor.style.display = 'block';
+                }
+                if (elements.gazeStatus) {
+                    elements.gazeStatus.style.display = 'block';
+                }
+
+                // Start gaze polling if eye tracking is also enabled
+                if (eyeTrackingEnabled && webgazerInitialized) {
+                    startGazePolling();
+                }
+            } else {
+                // Disable gaze cursor and status
+                if (elements.gazeCursor) {
+                    elements.gazeCursor.style.display = 'none';
+                }
+                if (elements.gazeStatus) {
+                    elements.gazeStatus.style.display = 'none';
+                }
+
+                // Stop gaze polling
+                stopGazePolling();
+            }
+        }
+
+        // Start polling for gaze data
+        function startGazePolling() {
+            if (gazePollingInterval) {
+                clearInterval(gazePollingInterval);
+            }
+
+            gazePollingInterval = setInterval(async () => {
+                if (!gazeTrackingEnabled || !eyeTrackingEnabled) return;
+
+                try {
+                    const rect = elements.exerciseArea.getBoundingClientRect();
+                    const response = await fetch(`${EYE_TRACKING_BACKEND}/get_enhanced_gaze?width=${rect.width}&height=${rect.height}`);
+                    const data = await response.json();
+
+                    if (data.success && data.gaze_x !== null && data.gaze_y !== null) {
+                        updateGazeCursor(data.gaze_x, data.gaze_y);
+                    }
+                } catch (error) {
+                    console.error('Error polling gaze data:', error);
+                }
+            }, 100); // Poll every 100ms
+        }
+
+        // Stop polling for gaze data
+        function stopGazePolling() {
+            if (gazePollingInterval) {
+                clearInterval(gazePollingInterval);
+                gazePollingInterval = null;
+            }
+        }
+
+        // Update gaze cursor position
+        function updateGazeCursor(gazeX, gazeY) {
+            if (!elements.gazeCursor || !gazeTrackingEnabled) return;
+
+            const rect = elements.exerciseArea.getBoundingClientRect();
+
+            // Convert normalized coordinates (0-1) to pixel coordinates within exercise area
+            const pixelX = gazeX * rect.width;
+            const pixelY = gazeY * rect.height;
+
+            // Position the cursor (centered on the gaze point)
+            elements.gazeCursor.style.left = (pixelX - 10) + 'px'; // -10 to center the 20px cursor
+            elements.gazeCursor.style.top = (pixelY - 10) + 'px';
+
+            // Update cursor color based on tracking quality
+            if (gazeX >= 0 && gazeX <= 1 && gazeY >= 0 && gazeY <= 1) {
+                elements.gazeCursor.style.backgroundColor = 'rgba(0, 255, 0, 0.8)'; // Green for good tracking
+                elements.gazeCursor.style.boxShadow = '0 0 10px rgba(0, 255, 0, 0.6)';
+            } else {
+                elements.gazeCursor.style.backgroundColor = 'rgba(255, 255, 0, 0.8)'; // Yellow for edge tracking
+                elements.gazeCursor.style.boxShadow = '0 0 10px rgba(255, 255, 0, 0.6)';
+            }
+        }
+        
+        // Update UI based on current state
+        function updateUI() {
+            // Update button states based on current state
+            if (elements.startBtn) {
+                elements.startBtn.disabled = !currentExercise || currentState === STATE.RUNNING || currentState === STATE.PAUSED;
+            }
+            if (elements.pauseBtn) {
+                elements.pauseBtn.disabled = currentState !== STATE.RUNNING;
+                elements.pauseBtn.innerHTML = currentState === STATE.PAUSED ?
+                    '<i class="bi bi-play-fill me-2"></i> Resume' :
+                    '<i class="bi bi-pause-fill me-2"></i> Pause';
+            }
+            if (elements.stopBtn) {
+                elements.stopBtn.disabled = currentState === STATE.IDLE || currentState === STATE.COMPLETED;
+            }
+
+            // Update exercise status display
+            if (elements.exerciseStatus) {
+                elements.exerciseStatus.textContent = currentState.charAt(0).toUpperCase() + currentState.slice(1);
+            }
+
+            // Update exercise list items
+            if (elements.exerciseList && currentExercise) {
+                const items = elements.exerciseList.querySelectorAll('.list-group-item');
+                items.forEach(item => {
+                    if (item.getAttribute('data-exercise') === currentExercise.id) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+        }
+        
+        // Initialize eye tracking
+        async function initializeEyeTracking() {
+            try {
+                console.log('START: Initializing eye tracking');
+
+                // Show loading message
+                if (elements.trackingStatus && elements.trackingMessage) {
+                    elements.trackingMessage.textContent = 'Starting camera...';
+                }
+
+                // Initialize backend tracker
+                if (realEnhancedTracker) {
+                    const initResult = await realEnhancedTracker.init();
+                    console.log('Backend tracker init result:', initResult);
+
+                    // Setup camera feed
+                    const video = setupCameraFeed();
+
+                    // Begin tracking
+                    await realEnhancedTracker.begin();
+                    console.log('Backend tracking started');
+
+                    // Set up gaze listener
+                realEnhancedTracker.setGazeListener(function(data, clock) {
+                    // The new system uses focus flags instead of gaze positions
+                    if (currentState === STATE.RUNNING) {
+                        // Use the new focus detection flags
+                        checkFocusNew(data);
+                    }
+                });
+
+                    // Show prediction points for debugging
+                    realEnhancedTracker.showPredictionPoints(true);
+
+                    // Update status
+                    if (elements.trackingStatus && elements.trackingMessage) {
+                        elements.trackingMessage.textContent = 'Eye tracking active';
+                    }
+                }
+                // ALWAYS use real backend tracking - no mock tracking
+
+                webgazerInitialized = true;
+                console.log('SUCCESS: Eye tracking initialization complete');
+
+            } catch (error) {
+                console.error('FAIL: Error initializing eye tracking:', error);
+                webgazerInitialized = false;
+
+                // Show error message
+                if (elements.trackingStatus && elements.trackingMessage) {
+                    elements.trackingMessage.textContent = 'Tracking failed: ' + error.message;
+                }
+
+                // Hide camera container on error
+                if (elements.cameraContainer) {
+                    elements.cameraContainer.style.display = 'none';
+                }
+
+                // Show toast notification
+                showToast('Failed to initialize eye tracking. Please check camera permissions.', 'Error', 'danger');
+            }
+        }
+        
+        // Enhanced setupCameraFeed function to ensure camera container is always visible
+        function setupCameraFeed() {
+            console.log('Setting up camera feed');
+            if (!elements.cameraPreview) {
+                console.error('Camera preview element not found');
+                // Try to find it directly
+                elements.cameraPreview = document.getElementById('camera-preview');
+                if (!elements.cameraPreview) {
+                    console.error('Camera preview element still not found');
+                    return;
+                }
+            }
+
+            // Clear any existing content
+            elements.cameraPreview.innerHTML = '';
+
+            // Create video element for camera feed (properly handles MJPEG streams)
+            const video = document.createElement('img');
+            video.id = 'webgazerVideoFeed';
+            video.width = '640';
+            video.height = '480';
+            video.style.width = '100%';
+            video.style.height = '100%';
+            video.style.objectFit = 'cover';
+            video.style.transform = 'scaleX(-1)'; // Mirror the video feed
+            video.style.imageRendering = 'pixelated'; // Ensure crisp video feed
+
+            // Set source to video feed endpoint through proxy
+            // Add timestamp to prevent caching and force new connection
+            video.src = EYE_TRACKING_BACKEND + '/video_feed?t=' + new Date().getTime();
+
+            // Add error handling for video loading
+            video.onerror = function(e) {
+                console.error('Video feed error:', e);
+                // Try to reload after a delay
+                setTimeout(() => {
+                    video.src = EYE_TRACKING_BACKEND + '/video_feed?t=' + new Date().getTime();
+                }, 2000);
+            };
+
+            video.onabort = function(e) {
+                console.warn('Video feed aborted:', e);
+            };
+
+            video.onstalled = function(e) {
+                console.warn('Video feed stalled:', e);
+            };
+
+            // Add event listeners for better error handling
+            video.addEventListener('error', function(e) {
+                console.error('Video stream error:', e);
+                // Try to reload the video feed after a short delay
+                setTimeout(function() {
+                    // Force a new connection by changing the URL
+                    video.src = EYE_TRACKING_BACKEND + '/video_feed?t=' + new Date().getTime();
+                }, 2000);
+            });
+
+            video.addEventListener('load', function() {
+                console.log('Video stream loaded');
+            });
+
+            // Add video to camera preview container
+            elements.cameraPreview.appendChild(video);
+
+            // Show the camera container
+            if (elements.cameraContainer) {
+                elements.cameraContainer.style.display = 'block';
+            }
+
+            return video;
+        }
+        
+        function updateGazeVisual(x, y) {
+            if (!eyeTrackingEnabled || !elements.gazeDot) return { x: 0, y: 0 };
+
+            // The backend now sends normalized coordinates (0-1) for the full screen.
+            // Convert to percentage (0-100) for CSS positioning.
+            x *= 100;
+            y *= 100;
+
+            // --- Smoothing logic remains unchanged ---
+            gazeHistory.push({ x, y });
+            if (gazeHistory.length > SMOOTHING_BUFFER_SIZE) {
+                gazeHistory.shift(); // Keep buffer size
+            }
+            let smoothedX = 0;
+            let smoothedY = 0;
+            const historySlice = gazeHistory.slice(-SMOOTHING_WEIGHTS.length);
+            let totalWeight = 0;
+            for (let i = 0; i < historySlice.length; i++) {
+                smoothedX += historySlice[i].x * SMOOTHING_WEIGHTS[i];
+                smoothedY += historySlice[i].y * SMOOTHING_WEIGHTS[i];
+                totalWeight += SMOOTHING_WEIGHTS[i];
+            }
+            if (totalWeight > 0) {
+                smoothedX /= totalWeight;
+                smoothedY /= totalWeight;
+            } else {
+                smoothedX = x;
+                smoothedY = y;
+            }
+            // --- End of smoothing logic ---
+
+            // Position the dot on the full page using percentages
+            elements.gazeDot.style.left = smoothedX + 'vw'; // Use vw (viewport width)
+            elements.gazeDot.style.top = smoothedY + 'vh';  // Use vh (viewport height)
+            elements.gazeDot.style.display = 'block';
+            elements.gazeDot.style.backgroundColor = 'rgba(0, 255, 0, 0.9)';
+            elements.gazeDot.style.boxShadow = '0 0 15px rgba(0, 255, 0, 0.9)';
+
+            // For the checkFocus function, we now need coordinates relative to the exercise area.
+            // We calculate this from the viewport-relative position.
+            const exerciseRect = elements.exerciseArea.getBoundingClientRect();
+            const pixelX_viewport = (smoothedX / 100) * window.innerWidth;
+            const pixelY_viewport = (smoothedY / 100) * window.innerHeight;
+
+            // Convert viewport pixels to pixels relative to the exercise area
+            const relativeX = pixelX_viewport - exerciseRect.left;
+            const relativeY = pixelY_viewport - exerciseRect.top;
+
+            const smoothedPixelPos = { x: relativeX, y: relativeY };
+            lastGazeData = smoothedPixelPos;
+
+            return smoothedPixelPos;
+        }
+        
+        // Select an exercise
+        function selectExercise(exerciseId) {
+            // Remove active class from all exercise items
+            if (elements.exerciseList) {
+                elements.exerciseList.querySelectorAll('.list-group-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
+            
+            // Add active class to selected item
+            const selectedItem = document.querySelector(`[data-exercise="${exerciseId}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+            
+            // Set current exercise
+            currentExercise = EXERCISES[exerciseId];
+            
+            // Update UI
+            updateUI();
+        }
+        
+        // Start the exercise
+        async function startExercise() {
+            if (!currentExercise) {
+                showToast('Please select an exercise first', 'Error', 'danger');
+                return;
+            }
+            
+            if (eyeTrackingEnabled) {
+                // Initialize eye tracking if it's not already initialized
+                if (!webgazerInitialized) {
+                    try {
+                        await initializeEyeTracking();
+                    } catch (error) {
+                        console.error("Failed to initialize eye tracking on start", error);
+                        showToast('Failed to start eye tracking. Please check camera and permissions.', 'Error', 'danger');
+                        return; // Stop if initialization fails
+                    }
+                }
+                // Start calibration process
+                startCalibration();
+            } else {
+                // Start countdown directly
+                startCountdown();
+            }
+        }
+        
+        // Start calibration
+        async function startCalibration() {
+            currentState = STATE.CALIBRATING;
+            currentCalibrationPoint = 0;
+            calibrationData = []; // Reset calibration data
+
+            // Show calibration overlay
+            if (elements.calibrationOverlay) {
+                elements.calibrationOverlay.style.display = 'flex';
+            }
+
+            // Set total points
+            if (elements.calibrationTotalPoints && currentExercise) {
+                elements.calibrationTotalPoints.textContent = currentExercise.calibrationPattern.length;
+            }
+
+            // Start calibration process
+            await calibratePoint();
+        }
+        
+        // Calibrate a single point
+        async function calibratePoint() {
+            if (!currentExercise) return;
+
+            if (currentCalibrationPoint >= currentExercise.calibrationPattern.length) {
+                // Calibration complete
+                await finishCalibration();
+                return;
+            }
+
+            // Update UI
+            if (elements.calibrationPointNumber) {
+                elements.calibrationPointNumber.textContent = currentCalibrationPoint + 1;
+            }
+
+            if (elements.calibrationInstruction) {
+                elements.calibrationInstruction.textContent = 'Look at the red dot - gaze dot should overlap';
+            }
+
+            // Position calibration point using relative %
+            const point = currentExercise.calibrationPattern[currentCalibrationPoint];
+
+            if (elements.calibrationPoint) {
+                elements.calibrationPoint.style.left = `${point.x * 100}%`;
+                elements.calibrationPoint.style.top = `${point.y * 100}%`;
+            }
+
+            // Update progress bar
+            const progress = ((currentCalibrationPoint + 1) / currentExercise.calibrationPattern.length) * 100;
+            if (elements.calibrationProgressBar) {
+                elements.calibrationProgressBar.style.width = progress + '%';
+            }
+
+            // Collect gaze samples
+            calibrationSamples = []; // Reset for this point
+            await new Promise(resolve => {
+                const startTime = Date.now();
+                const calibrationDuration = 2000; // 2 seconds per point
+
+                const checkSamples = () => {
+                    const elapsed = Date.now() - startTime;
+                    if (elapsed >= calibrationDuration || calibrationSamples.length >= 20) {
+                        // Enough samples or timeout
+                        let avgGazeX = 0.5, avgGazeY = 0.5; // Fallback
+                        if (calibrationSamples.length > 0) {
+                            avgGazeX = calibrationSamples.reduce((sum, s) => sum + s.x, 0) / calibrationSamples.length;
+                            avgGazeY = calibrationSamples.reduce((sum, s) => sum + s.y, 0) / calibrationSamples.length;
+                        } else {
+                            console.warn('No gaze samples collected for calibration point', currentCalibrationPoint);
+                        }
+
+                        // Store data
+                        calibrationData.push({
+                            target_x: point.x * 100,
+                            target_y: point.y * 100,
+                            gaze_x: avgGazeX * 100,
+                            gaze_y: avgGazeY * 100
+                        });
+
+                        // Calibration point complete
+                        if (elements.calibrationPoint) {
+                            elements.calibrationPoint.style.backgroundColor = '#28a745'; // Green
+                        }
+                        if (elements.calibrationInstruction) {
+                            elements.calibrationInstruction.textContent = 'Calibration point complete';
+                        }
+
+                        setTimeout(() => {
+                            if (elements.calibrationPoint) {
+                                elements.calibrationPoint.style.backgroundColor = '#dc3545'; // Red
+                            }
+                            currentCalibrationPoint++;
+                            resolve();
+                        }, 500);
+                    } else {
+                        // Continue checking
+                        setTimeout(checkSamples, 100);
+                    }
+                };
+
+                checkSamples();
+            });
+
+            // Move to next point
+            await calibratePoint();
+        }
+        
+        // Finish calibration and start countdown
+        async function finishCalibration() {
+            if (elements.calibrationOverlay) {
+                elements.calibrationOverlay.style.display = 'none';
+            }
+
+            // Send calibration data to backend if using real tracker
+            if (webgazerInitialized && realEnhancedTracker && realEnhancedTracker.calibrate) {
+                try {
+                    // Send collected calibration data (targets and averaged gazes)
+                    await realEnhancedTracker.calibrate({ calibration_data: calibrationData });
+                    console.log('Calibration data sent to backend:', calibrationData);
+                } catch (error) {
+                    console.error('Error sending calibration data:', error);
+                }
+            }
+
+            startCountdown();
+        }
+        
+        // Start countdown before exercise
+        function startCountdown() {
+            currentState = STATE.READY;
+            let count = 3;
+            
+            // Show ready overlay
+            if (elements.readyOverlay) {
+                elements.readyOverlay.style.display = 'flex';
+            }
+            
+            const countdown = setInterval(() => {
+                if (elements.countdownNumber) {
+                    elements.countdownNumber.textContent = count;
+                }
+                
+                if (count <= 0) {
+                    clearInterval(countdown);
+                    if (elements.readyOverlay) {
+                        elements.readyOverlay.style.display = 'none';
+                    }
+                    beginExercise();
+                }
+                
+                count--;
+            }, 1000);
+        }
+        
+        // Begin the actual exercise
+        function beginExercise() {
+            currentState = STATE.RUNNING;
+            remainingTime = currentExercise.duration;
+            exerciseStartTime = Date.now();
+            totalGazeSamples = 0;
+            focusedGazeSamples = 0;
+
+            // Reset enhanced focus detection variables
+            distractionTimer = 0;
+            isDistracted = false;
+            lastDistractionWarning = 0;
+            actualFocusTime = 0;
+            totalExerciseTime = 0;
+            boundaryViolations = 0;
+            exerciseAreaViolations = 0;
+            focusStreaks = [];
+            currentFocusStreak = 0;
+            maxFocusStreak = 0;
+            lastFocusState = false;
+            
+            // Show exercise elements
+            if (elements.target) {
+                elements.target.style.display = 'block';
+            }
+            if (elements.progressContainer) {
+                elements.progressContainer.style.display = 'block';
+            }
+            if (elements.focusIndicator) {
+                elements.focusIndicator.style.display = 'block';
+            }
+            if (elements.enhancedMetrics) {
+                elements.enhancedMetrics.style.display = 'block';
+            }
+            if (elements.exerciseArea) {
+                elements.exerciseArea.classList.add('active');
+            }
+            
+            // Start timer
+            exerciseTimer = setInterval(updateTimer, 1000);
+            
+            // Start animation
+            animateTarget();
+            
+            updateUI();
+        }
+        
+        // Update exercise timer
+        function updateTimer() {
+            if (currentState !== STATE.RUNNING) return;
+            
+            remainingTime--;
+            
+            // Update timer display
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            if (elements.exerciseTimer) {
+                elements.exerciseTimer.textContent = 
+                    String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+            }
+            
+            // Update progress bar
+            const progress = ((currentExercise.duration - remainingTime) / currentExercise.duration) * 100;
+            if (elements.exerciseProgress) {
+                elements.exerciseProgress.textContent = Math.round(progress) + '%';
+            }
+            if (elements.progressBar) {
+                elements.progressBar.style.width = progress + '%';
+            }
+            
+            // Check if exercise is complete
+            if (remainingTime <= 0) {
+                completeExercise();
+            }
+        }
+        
+        // Animate the target based on exercise type
+        function animateTarget() {
+            if (currentState !== STATE.RUNNING) return;
+            
+            const exerciseAreaRect = elements.exerciseArea.getBoundingClientRect();
+            const centerX = exerciseAreaRect.width / 2;
+            const centerY = exerciseAreaRect.height / 2;
+            const amplitude = Math.min(exerciseAreaRect.width, exerciseAreaRect.height) * 0.3;
+            const time = (Date.now() - exerciseStartTime) / 1000;
+            
+            let x, y;
+            
+            switch (currentExercise.id) {
+                case 'center-focus':
+                    // Stationary target in center
+                    x = centerX;
+                    y = centerY;
+                    break;
+                    
+                case 'figure-eight':
+                    // Figure-8 (infinity) pattern
+                    x = centerX + amplitude * Math.sin(time * 0.5) * Math.cos(time * 0.25);
+                    y = centerY + amplitude * Math.sin(time * 0.25);
+                    break;
+                    
+                case 'horizontal-shift':
+                    // Horizontal movement
+                    x = centerX + amplitude * Math.sin(time * 0.5);
+                    y = centerY;
+                    break;
+                    
+                case 'vertical-shift':
+                    // Vertical movement
+                    x = centerX;
+                    y = centerY + amplitude * Math.sin(time * 0.5);
+                    break;
+                    
+                case 'circular-motion':
+                    // Circular motion
+                    x = centerX + amplitude * Math.cos(time * 0.5);
+                    y = centerY + amplitude * Math.sin(time * 0.5);
+                    break;
+                    
+                case 'zoom-focus':
+                    // Pulsing target (size changes)
+                    x = centerX;
+                    y = centerY;
+                    const scale = 0.8 + 0.4 * Math.sin(time * 2);
+                    if (elements.target) {
+                        elements.target.style.transform = `scale(${scale})`;
+                    }
+                    break;
+                    
+                case 'diagonal-sweep':
+                    // Diagonal movement
+                    x = centerX + amplitude * Math.sin(time * 0.5);
+                    y = centerY + amplitude * Math.cos(time * 0.5);
+                    break;
+                    
+                default:
+                    // Default to center
+                    x = centerX;
+                    y = centerY;
+            }
+            
+            // Apply position (relative to exercise area)
+            if (elements.target) {
+                elements.target.style.left = (x - elements.target.offsetWidth / 2) + 'px';
+                elements.target.style.top = (y - elements.target.offsetHeight / 2) + 'px';
+            }
+            
+            // Continue animation
+            animationFrame = requestAnimationFrame(animateTarget);
+        }
+        
+        // New focus detection using head pose and eye state flags
+        function checkFocusNew(data) {
+            if (!eyeTrackingEnabled || currentState !== STATE.RUNNING || !currentExercise) return;
+
+            const currentTime = Date.now();
+            totalGazeSamples++;
+            totalExerciseTime += 200; // Approximate 200ms per sample
+
+            // Use the new focus flags from the backend
+            const isDiverted = data.is_diverted || false;
+            const isDrowsy = data.is_drowsy || false;
+
+            // Determine if user is focused (not diverted and not drowsy)
+            const isFocused = !isDiverted && !isDrowsy;
+
+            // Screen boundary detection (simplified since we don't have gaze coordinates)
+            const isOutsideScreen = isDiverted; // Head diversion indicates looking away from screen
+
+            if (isOutsideScreen) {
+                boundaryViolations++;
+                if (elements.boundaryViolations) {
+                    elements.boundaryViolations.textContent = `Boundary Violations: ${boundaryViolations}`;
+                }
+            }
+
+            // Exercise area monitoring (simplified - assume head diversion means outside exercise area)
+            const isOutsideExerciseArea = isDiverted;
+
+            if (isOutsideExerciseArea) {
+                exerciseAreaViolations++;
+                if (elements.areaViolations) {
+                    elements.areaViolations.textContent = `Area Violations: ${exerciseAreaViolations}`;
+                }
+            }
+
+            if (isFocused) {
+                focusedGazeSamples++;
+                actualFocusTime += 200; // Add 200ms to focused time
+            }
+
+            // Calculate accuracy based on focus state (simplified)
+            const accuracy = isFocused ? 100 : 0;
+
+            // Smooth the accuracy over time
+            if (totalGazeSamples > 1) {
+                gazeAccuracy = Math.round((gazeAccuracy * 0.8) + (accuracy * 0.2));
+            } else {
+                gazeAccuracy = Math.round(accuracy);
+            }
+
+            // Focus streak tracking
+            if (isFocused !== lastFocusState) {
+                if (isFocused) {
+                    currentFocusStreak = 0;
+                } else if (lastFocusState) {
+                    // Just lost focus, record the streak
+                    focusStreaks.push(currentFocusStreak);
+                    maxFocusStreak = Math.max(maxFocusStreak, currentFocusStreak);
+                    currentFocusStreak = 0;
+                }
+                lastFocusState = isFocused;
+            }
+
+            if (isFocused) {
+                currentFocusStreak += 200; // Add 200ms to current streak
+            }
+
+            // Distraction detection and timer
+            if (!isFocused || isOutsideExerciseArea) {
+                distractionTimer += 200;
+                if (!isDistracted && distractionTimer >= distractionWarningThreshold) {
+                    isDistracted = true;
+                    showDistractionAlert();
+                }
+            } else {
+                distractionTimer = Math.max(0, distractionTimer - 200); // Reduce timer when focused
+                if (isDistracted && distractionTimer < distractionWarningThreshold / 2) {
+                    isDistracted = false;
+                    hideDistractionAlert();
+                }
+            }
+
+            // Update UI
+            if (elements.gazeAccuracyElement) {
+                elements.gazeAccuracyElement.textContent = `Gaze Accuracy: ${gazeAccuracy}%`;
+            }
+
+            // Legacy focusAccuracy for other parts of the UI
+            focusAccuracy = totalGazeSamples > 0 ? Math.round((focusedGazeSamples / totalGazeSamples) * 100) : 0;
+            if (elements.focusAccuracy) {
+                elements.focusAccuracy.textContent = `Focus: ${focusAccuracy}%`;
+            }
+
+            // Update focus time display
+            const focusTimeSeconds = Math.round(actualFocusTime / 1000);
+            if (elements.focusTimeDisplay) {
+                elements.focusTimeDisplay.textContent = `Focus Time: ${focusTimeSeconds}s`;
+            }
+
+            // Update enhanced metrics
+            if (elements.maxFocusStreak) {
+                elements.maxFocusStreak.textContent = `Max Focus Streak: ${Math.round(maxFocusStreak / 1000)}s`;
+            }
+            if (elements.distractionCount) {
+                const distractionCount = focusStreaks.length;
+                elements.distractionCount.textContent = `Distractions: ${distractionCount}`;
+            }
+
+            // Update focus indicator color and message based on focus state
+            if (elements.focusIcon && elements.focusMessage) {
+                if (isDrowsy) {
+                    elements.focusIcon.className = 'bi bi-moon-fill me-2 text-warning';
+                    elements.focusMessage.textContent = 'Drowsiness detected!';
+                } else if (isDiverted) {
+                    elements.focusIcon.className = 'bi bi-exclamation-triangle-fill me-2 text-danger';
+                    elements.focusMessage.textContent = 'Look at the screen!';
+                } else {
+                    elements.focusIcon.className = 'bi bi-bullseye me-2 text-success';
+                    elements.focusMessage.textContent = 'Good focus!';
+                }
+            }
+
+            // Update target visual feedback
+            if (elements.target) {
+                if (isFocused) {
+                    elements.target.classList.add('target-focused');
+                } else {
+                    elements.target.classList.remove('target-focused');
+                }
+            }
+        }
+
+        // Show distraction alert
+        function showDistractionAlert() {
+            if (elements.distractionAlert) {
+                elements.distractionAlert.style.display = 'block';
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    hideDistractionAlert();
+                }, 5000);
+            }
+        }
+
+        // Hide distraction alert
+        function hideDistractionAlert() {
+            if (elements.distractionAlert) {
+                elements.distractionAlert.style.display = 'none';
+            }
+        }
+
+        // Show validation failure message
+        function showValidationFailure(achievedAccuracy) {
+            if (elements.animation) {
+                elements.animation.innerHTML = `
+                    <div class="text-center p-4">
+                        <div class="display-1 text-warning mb-4">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <h3 class="mb-3">Exercise Not Complete</h3>
+                        <div class="alert alert-warning">
+                            <h5>Minimum Accuracy Not Met</h5>
+                            <p class="mb-2">You achieved <strong>${achievedAccuracy}%</strong> accuracy.</p>
+                            <p class="mb-2">Required minimum: <strong>${minimumAccuracyRequired}%</strong></p>
+                            <p class="mb-0">Try the exercise again to improve your focus!</p>
+                        </div>
+                        <button class="btn btn-primary me-2" onclick="resetToIdle()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+                        </button>
+                        <button class="btn btn-secondary" onclick="showCompletionSummary(${achievedAccuracy})">
+                            <i class="bi bi-bar-chart me-2"></i>View Summary
+                        </button>
+                    </div>
+                `;
+                elements.animation.style.display = 'flex';
+            }
+
+            // Hide exercise elements
+            if (elements.target) elements.target.style.display = 'none';
+            if (elements.progressContainer) elements.progressContainer.style.display = 'none';
+            if (elements.focusIndicator) elements.focusIndicator.style.display = 'none';
+            if (elements.enhancedMetrics) elements.enhancedMetrics.style.display = 'none';
+            if (elements.exerciseArea) elements.exerciseArea.classList.remove('active');
+
+            // Reset timer display
+            if (elements.exerciseTimer) elements.exerciseTimer.textContent = '00:00';
+        }
+
+        // Show completion summary with enhanced metrics
+        function showCompletionSummary(achievedAccuracy = null) {
+            const accuracy = achievedAccuracy !== null ? achievedAccuracy : (totalGazeSamples > 0 ? Math.round((focusedGazeSamples / totalGazeSamples) * 100) : 0);
+            const focusTimeMinutes = Math.floor(actualFocusTime / 60000);
+            const focusTimeSeconds = Math.round((actualFocusTime % 60000) / 1000);
+            const totalTimeMinutes = Math.floor(totalExerciseTime / 60000);
+            const totalTimeSeconds = Math.round((totalExerciseTime % 60000) / 1000);
+
+            if (elements.animation) {
+                elements.animation.innerHTML = `
+                    <div class="text-center p-4">
+                        <div class="display-1 text-success mb-4">
+                            <i class="bi bi-trophy-fill"></i>
+                        </div>
+                        <h3 class="mb-4">Exercise Complete!</h3>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Focus Performance</h5>
+                                        <div class="display-4 text-primary mb-2">${accuracy}%</div>
+                                        <small class="text-muted">Accuracy Achieved</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Focus Time</h5>
+                                        <div class="display-4 text-success mb-2">${focusTimeMinutes}:${focusTimeSeconds.toString().padStart(2, '0')}</div>
+                                        <small class="text-muted">Time Actually Focused</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Best Streak</h5>
+                                        <div class="display-4 text-info mb-2">${Math.round(maxFocusStreak / 1000)}s</div>
+                                        <small class="text-muted">Longest Focus Period</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Distractions</h5>
+                                        <div class="display-4 text-warning mb-2">${focusStreaks.length}</div>
+                                        <small class="text-muted">Focus Interruptions</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <h6>Additional Metrics:</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><strong>Boundary Violations:</strong> ${boundaryViolations}</li>
+                                <li><strong>Area Violations:</strong> ${exerciseAreaViolations}</li>
+                                <li><strong>Total Samples:</strong> ${totalGazeSamples}</li>
+                                <li><strong>Total Time:</strong> ${totalTimeMinutes}:${totalTimeSeconds.toString().padStart(2, '0')}</li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary" onclick="resetToIdle()">
+                            <i class="bi bi-house me-2"></i>Return to Menu
+                        </button>
+                    </div>
+                `;
+                elements.animation.style.display = 'flex';
+            }
+
+            // Hide exercise elements
+            if (elements.target) elements.target.style.display = 'none';
+            if (elements.progressContainer) elements.progressContainer.style.display = 'none';
+            if (elements.focusIndicator) elements.focusIndicator.style.display = 'none';
+            if (elements.enhancedMetrics) elements.enhancedMetrics.style.display = 'none';
+            if (elements.exerciseArea) elements.exerciseArea.classList.remove('active');
+
+            // Reset timer display
+            if (elements.exerciseTimer) elements.exerciseTimer.textContent = '00:00';
+        }
+        
+        // Complete the exercise with validation
+        function completeExercise() {
+            // Clear intervals and animation frames
+            if (exerciseTimer) clearInterval(exerciseTimer);
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+
+            // Calculate final accuracy
+            const finalFocusAccuracy = totalGazeSamples > 0 ? Math.round((focusedGazeSamples / totalGazeSamples) * 100) : 0;
+            const finalGazeAccuracy = finalFocusAccuracy;
+            const exerciseDuration = currentExercise ? currentExercise.duration : 0;
+
+            // Completion validation: Check minimum accuracy requirement
+            if (finalFocusAccuracy < minimumAccuracyRequired) {
+                // Show validation failure message
+                showValidationFailure(finalFocusAccuracy);
+                return; // Don't complete the exercise
+            }
+
+            currentState = STATE.COMPLETED;
+            
+            // Hide exercise elements
+            if (elements.target) elements.target.style.display = 'none';
+            if (elements.calibrationOverlay) elements.calibrationOverlay.style.display = 'none';
+            if (elements.readyOverlay) elements.readyOverlay.style.display = 'none';
+            if (elements.progressContainer) elements.progressContainer.style.display = 'none';
+            if (elements.focusIndicator) elements.focusIndicator.style.display = 'none';
+            if (elements.exerciseArea) elements.exerciseArea.classList.remove('active');
+            
+            // Show completion message
+            if (elements.animation) {
+                elements.animation.innerHTML = `
+                    <div class="text-center p-4">
+                        <div class="display-1 text-success mb-4">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <h3 class="mb-3">Exercise Complete!</h3>
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Results</h5>
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <div class="display-4 text-primary">${finalFocusAccuracy}%</div>
+                                                <p class="mb-0">Focus Accuracy</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="display-4 text-success">${finalGazeAccuracy}%</div>
+                                                <p class="mb-0">Gaze Accuracy</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        ${eyeTrackingEnabled ? `
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Your eye tracking data has been recorded for healthcare analysis.
+                        </div>
+                        ` : ''}
+                        <button class="btn btn-primary" onclick="resetToIdle()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Start Another Exercise
+                        </button>
+                    </div>
+                `;
+                elements.animation.style.display = 'flex';
+            }
+            
+            // Store exercise results
+            if (eyeTrackingEnabled) {
+                storeExerciseResults(finalFocusAccuracy, finalGazeAccuracy, exerciseDuration);
+            }
+            
+            updateUI();
+        }
+        
+        // Store exercise results (placeholder)
+        async function storeExerciseResults(focusAccuracy, gazeAccuracy, duration) {
+            try {
+                // In a real implementation, this would send data to a server
+                console.log('Storing exercise results:', { focusAccuracy, gazeAccuracy, duration });
+                
+                // Example fetch call (commented out since there's no server in this example)
+                /*
+                const response = await fetch('/api/store-exercise-results', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        exercise_type: currentExercise ? currentExercise.id : 'unknown',
+                        focus_accuracy: focusAccuracy,
+                        gaze_accuracy: gazeAccuracy,
+                        duration: duration,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to store exercise results');
+                }
+                */
+            } catch (error) {
+                console.error('Error storing exercise results:', error);
+            }
+        }
+        
+        // Reset to idle state
+        function resetToIdle() {
+            currentState = STATE.IDLE;
+            currentExercise = null;
+            
+            if (elements.exerciseList) {
+                elements.exerciseList.querySelectorAll('.list-group-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
+            
+            if (elements.animation) {
+                elements.animation.innerHTML = `
+                    <div class="display-1 mb-4">
+                        <i class="bi bi-eye-fill" style="color: var(--primary-color); animation: pulse 2s infinite;"></i>
+                    </div>
+                    <h3 class="mb-3">Select an exercise to begin</h3>
+                    <p class="text-muted">Choose from our scientifically designed eye exercises</p>
+                    <p class="small text-info"><i class="bi bi-info-circle me-1"></i>Enable eye tracking for best results</p>
+                `;
+            }
+            
+            if (elements.exerciseInstructions) {
+                elements.exerciseInstructions.innerHTML = `
+                    <div class="alert alert-info">
+                        <div class="d-flex">
+                            <i class="bi bi-lightbulb-fill me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <p class="mb-2"><strong>How to use:</strong></p>
+                                <ol class="mb-2">
+                                    <li>Enable eye tracking toggle below</li>
+                                    <li>Allow camera permission when prompted</li>
+                                    <li>Select an exercise from the list</li>
+                                    <li>Complete calibration by looking at red dots</li>
+                                    <li>Follow the target with your eyes during exercise</li>
+                                </ol>
+                                <p class="mb-0 small text-muted">Green indicator = Good focus | Red indicator = Need to refocus</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            updateUI();
+        }
+        
+        // Toggle pause/resume
+        function togglePause() {
+            if (currentState === STATE.RUNNING) {
+                pauseExercise();
+            } else if (currentState === STATE.PAUSED) {
+                resumeExercise();
+            }
+        }
+        
+        // Pause the exercise
+        function pauseExercise() {
+            if (currentState !== STATE.RUNNING) return;
+            
+            currentState = STATE.PAUSED;
+            
+            if (exerciseTimer) clearInterval(exerciseTimer);
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            
+            if (realEnhancedTracker) realEnhancedTracker.pause();
+            
+            updateUI();
+        }
+        
+        // Resume the exercise
+        function resumeExercise() {
+            if (currentState !== STATE.PAUSED) return;
+            
+            currentState = STATE.RUNNING;
+            
+            // Restart timer
+            exerciseTimer = setInterval(updateTimer, 1000);
+            
+            // Resume animation
+            animateTarget();
+            
+            if (realEnhancedTracker) realEnhancedTracker.resume();
+            
+            updateUI();
+        }
+        
+        // Stop the exercise
+        function stopExerciseProper() {
+            // Clear intervals and animation frames
+            if (exerciseTimer) clearInterval(exerciseTimer);
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            
+            // Reset state
+            currentState = STATE.IDLE;
+            currentExercise = null;
+            
+            // Hide exercise elements
+            if (elements.target) elements.target.style.display = 'none';
+            if (elements.calibrationOverlay) elements.calibrationOverlay.style.display = 'none';
+            if (elements.readyOverlay) elements.readyOverlay.style.display = 'none';
+            if (elements.progressContainer) elements.progressContainer.style.display = 'none';
+            if (elements.focusIndicator) elements.focusIndicator.style.display = 'none';
+            if (elements.exerciseArea) elements.exerciseArea.classList.remove('active');
+            
+            // Reset exercise list selection
+            if (elements.exerciseList) {
+                elements.exerciseList.querySelectorAll('.list-group-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
+            
+            // Reset timer
+            if (elements.exerciseTimer) elements.exerciseTimer.textContent = '00:00';
+            
+            // Reset camera if needed
+            if (eyeTrackingEnabled && webgazerInitialized) {
+                try {
+                    realEnhancedTracker.end();
+                } catch (e) {
+                    console.warn('Error ending webgazer:', e);
+                }
+                webgazerInitialized = false;
+            }
+            
+            // Hide camera container
+            if (elements.cameraContainer) elements.cameraContainer.style.display = 'none';
+            
+            updateUI();
+        }
+        
+        // Show toast notification
+        function showToast(message, title = 'Notification', type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) return;
+            
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}</strong><br>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            
+            const toastEl = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            toast.show();
+            
+            // Remove toast from DOM after it's hidden
+            toastEl.addEventListener('hidden.bs.toast', () => {
+                toastEl.remove();
+            });
+        }
+    </script>
+</body>
+</html>
