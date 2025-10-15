@@ -7,7 +7,6 @@ for API requests to the backend tracking server.
 from flask import Flask, render_template, send_from_directory, request, Response
 from flask_cors import CORS
 import requests
-import os
 
 
 app = Flask(__name__, 
