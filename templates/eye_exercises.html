@@ -105,7 +105,6 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1);
         }
 
         /* Notification Alert */
@@ -415,7 +414,7 @@
 
     <!-- Camera Preview -->
     <div id="camera-container">
-        <video id="video" autoplay playsinline></video>
+        <img id="video" src="/api/enhanced-eye-tracking/video_feed" alt="Camera Feed" />
     </div>
 
     <canvas id="canvas" style="display: none;"></canvas>
@@ -534,22 +533,23 @@
 
             if (trackingEnabled) {
                 try {
-                    // Access browser webcam
-                    videoStream = await navigator.mediaDevices.getUserMedia({ 
-                        video: { 
-                            width: { ideal: 640 },
-                            height: { ideal: 480 }
-                        } 
+                    // Start enhanced tracking server camera
+                    const startResponse = await fetch('/api/enhanced-eye-tracking/start_camera', {
+                        method: 'POST'
                     });
                     
-                    const videoElement = document.getElementById('video');
-                    videoElement.srcObject = videoStream;
+                    if (!startResponse.ok) {
+                        throw new Error('Failed to start camera');
+                    }
                     
-                    // Initialize canvas for frame capture
-                    canvas = document.getElementById('canvas');
-                    canvas.width = 640;
-                    canvas.height = 480;
-                    ctx = canvas.getContext('2d');
+                    // Start tracking
+                    const trackingResponse = await fetch('/api/enhanced-eye-tracking/start_tracking', {
+                        method: 'POST'
+                    });
+                    
+                    if (!trackingResponse.ok) {
+                        throw new Error('Failed to start tracking');
+                    }
                     
                     // Show camera preview
                     document.getElementById('camera-container').classList.add('active');
@@ -561,19 +561,29 @@
                         document.getElementById('startBtn').disabled = false;
                     }
                     
-                    showNotification('Camera started successfully!');
+                    showNotification('Camera and tracking started successfully!');
                     setTimeout(hideNotification, 2000);
                 } catch (error) {
-                    console.error('Error accessing camera:', error);
+                    console.error('Error starting tracking:', error);
                     toggle.checked = false;
                     trackingEnabled = false;
-                    showNotification('Failed to access camera. Please check permissions.');
+                    showNotification('Failed to start camera. Please try again.');
                 }
             } else {
-                if (videoStream) {
-                    videoStream.getTracks().forEach(track => track.stop());
-                    videoStream = null;
+                try {
+                    // Stop tracking
+                    await fetch('/api/enhanced-eye-tracking/stop_tracking', {
+                        method: 'POST'
+                    });
+                    
+                    // Stop camera
+                    await fetch('/api/enhanced-eye-tracking/stop_camera', {
+                        method: 'POST'
+                    });
+                } catch (error) {
+                    console.error('Error stopping tracking:', error);
                 }
+                
                 stopFocusPolling();
                 document.getElementById('camera-container').classList.remove('active');
                 document.getElementById('startBtn').disabled = true;
@@ -584,48 +594,20 @@
             if (pollingInterval) return;
             
             pollingInterval = setInterval(async () => {
-                if (currentState === AppState.RUNNING && ctx && canvas) {
+                if (currentState === AppState.RUNNING) {
                     try {
-                        const videoElement = document.getElementById('video');
+                        // Get enhanced gaze data from the server
+                        const response = await fetch('/api/enhanced-eye-tracking/get_enhanced_gaze');
                         
-                        // Make sure video is ready
-                        if (videoElement.readyState !== videoElement.HAVE_ENOUGH_DATA) {
+                        if (!response.ok) {
+                            console.error('Gaze detection request failed:', response.status);
                             return;
                         }
                         
-                        // Draw current video frame to canvas
-                        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-                        
-                        // Convert canvas to blob and send immediately
-                        canvas.toBlob(async (blob) => {
-                            if (!blob) {
-                                console.error('Failed to create blob from canvas');
-                                return;
-                            }
-                            
-                            try {
-                                const formData = new FormData();
-                                formData.append('frame', blob, 'frame.jpg');
-                                
-                                // Send frame to backend for face detection
-                                const response = await fetch('http://127.0.0.1:5001/api/detect_face', {
-                                    method: 'POST',
-                                    body: formData
-                                });
-                                
-                                if (!response.ok) {
-                                    console.error('Face detection request failed:', response.status);
-                                    return;
-                                }
-                                
-                                const data = await response.json();
-                                handleFocusData(data);
-                            } catch (error) {
-                                console.error('Face detection error:', error);
-                            }
-                        }, 'image/jpeg', 0.9);
+                        const data = await response.json();
+                        handleFocusData(data);
                     } catch (error) {
-                        console.error('Polling error:', error);
+                        console.error('Focus polling error:', error);
                     }
                 }
             }, 500);
