@@ -106,6 +106,10 @@
             height: 100%;
             object-fit: cover;
         }
+        
+        #canvas {
+            display: none;
+        }
 
         /* Notification Alert */
         #notification-alert {
@@ -527,32 +531,56 @@
             }
         }
 
+        let videoStream = null;
+        let videoElement = null;
+        let canvasElement = null;
+        let canvasContext = null;
+
         async function toggleTracking() {
             const toggle = document.getElementById('trackingToggle');
             trackingEnabled = toggle.checked;
 
             if (trackingEnabled) {
                 try {
-                    // Start enhanced tracking server camera
-                    const startResponse = await fetch('/api/enhanced-eye-tracking/start_camera', {
-                        method: 'POST'
+                    // Request browser webcam access
+                    videoStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { width: 640, height: 480 } 
                     });
                     
-                    if (!startResponse.ok) {
-                        throw new Error('Failed to start camera');
+                    // Create video element for browser webcam
+                    if (!videoElement) {
+                        videoElement = document.createElement('video');
+                        videoElement.autoplay = true;
+                        videoElement.playsInline = true;
+                        videoElement.width = 640;
+                        videoElement.height = 480;
                     }
                     
-                    // Start tracking
-                    const trackingResponse = await fetch('/api/enhanced-eye-tracking/start_tracking', {
-                        method: 'POST'
-                    });
+                    videoElement.srcObject = videoStream;
                     
-                    if (!trackingResponse.ok) {
-                        throw new Error('Failed to start tracking');
+                    // Create canvas for frame capture
+                    if (!canvasElement) {
+                        canvasElement = document.getElementById('canvas');
+                        canvasContext = canvasElement.getContext('2d');
+                        canvasElement.width = 640;
+                        canvasElement.height = 480;
                     }
                     
-                    // Show camera preview
-                    document.getElementById('camera-container').classList.add('active');
+                    // Replace video feed with local webcam
+                    const cameraContainer = document.getElementById('camera-container');
+                    const existingVideo = document.getElementById('video');
+                    if (existingVideo) {
+                        existingVideo.remove();
+                    }
+                    
+                    videoElement.id = 'video';
+                    videoElement.style.width = '100%';
+                    videoElement.style.height = '100%';
+                    videoElement.style.objectFit = 'cover';
+                    videoElement.style.transform = 'scaleX(-1)';
+                    
+                    cameraContainer.appendChild(videoElement);
+                    cameraContainer.classList.add('active');
                     
                     // Start face detection polling
                     startFocusPolling();
@@ -561,27 +589,23 @@
                         document.getElementById('startBtn').disabled = false;
                     }
                     
-                    showNotification('Camera and tracking started successfully!');
+                    showNotification('Camera started successfully!');
                     setTimeout(hideNotification, 2000);
                 } catch (error) {
-                    console.error('Error starting tracking:', error);
+                    console.error('Error starting camera:', error);
                     toggle.checked = false;
                     trackingEnabled = false;
-                    showNotification('Failed to start camera. Please try again.');
+                    showNotification('Failed to access camera. Please allow camera permissions.');
                 }
             } else {
-                try {
-                    // Stop tracking
-                    await fetch('/api/enhanced-eye-tracking/stop_tracking', {
-                        method: 'POST'
-                    });
-                    
-                    // Stop camera
-                    await fetch('/api/enhanced-eye-tracking/stop_camera', {
-                        method: 'POST'
-                    });
-                } catch (error) {
-                    console.error('Error stopping tracking:', error);
+                // Stop camera
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                    videoStream = null;
+                }
+                
+                if (videoElement) {
+                    videoElement.srcObject = null;
                 }
                 
                 stopFocusPolling();
@@ -594,23 +618,66 @@
             if (pollingInterval) return;
             
             pollingInterval = setInterval(async () => {
-                if (currentState === AppState.RUNNING) {
+                if (currentState === AppState.RUNNING && videoElement && canvasElement) {
                     try {
-                        // Get enhanced gaze data from the server
-                        const response = await fetch('/api/enhanced-eye-tracking/get_enhanced_gaze');
+                        // Capture current frame from browser webcam
+                        canvasContext.drawImage(videoElement, 0, 0, 640, 480);
+                        
+                        // Convert canvas to blob
+                        const blob = await new Promise(resolve => {
+                            canvasElement.toBlob(resolve, 'image/jpeg', 0.8);
+                        });
+                        
+                        // Send frame to backend for face detection
+                        const formData = new FormData();
+                        formData.append('frame', blob, 'frame.jpg');
+                        
+                        const response = await fetch('/api/enhanced-eye-tracking/detect_face', {
+                            method: 'POST',
+                            body: formData
+                        });
                         
                         if (!response.ok) {
-                            console.error('Gaze detection request failed:', response.status);
+                            console.error('Face detection request failed:', response.status);
                             return;
                         }
                         
                         const data = await response.json();
                         handleFocusData(data);
+                        
+                        // If face detected, draw bounding box on video
+                        if (data.face_detected && data.bbox) {
+                            drawBoundingBox(data.bbox);
+                        }
                     } catch (error) {
                         console.error('Focus polling error:', error);
                     }
                 }
             }, 500);
+        }
+        
+        function drawBoundingBox(bbox) {
+            if (!canvasElement || !canvasContext) return;
+            
+            // Clear previous drawings
+            canvasContext.clearRect(0, 0, 640, 480);
+            canvasContext.drawImage(videoElement, 0, 0, 640, 480);
+            
+            // Draw bounding box
+            canvasContext.strokeStyle = '#00FF00';
+            canvasContext.lineWidth = 3;
+            canvasContext.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+            
+            // Draw label
+            canvasContext.fillStyle = '#00FF00';
+            canvasContext.font = '16px Arial';
+            canvasContext.fillText('Face Detected', bbox.x, bbox.y - 5);
+            
+            // Update video element with annotated frame
+            const dataURL = canvasElement.toDataURL('image/jpeg', 0.8);
+            if (videoElement) {
+                videoElement.src = dataURL;
+            }
         }
 
         function stopFocusPolling() {

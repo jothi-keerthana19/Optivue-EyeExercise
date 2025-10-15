@@ -22,7 +22,7 @@ class EnhancedEyeTracker:
                                               like 0.7 increases accuracy by filtering out weak detections.
         """
         self.mp_face_detection = mp.solutions.face_detection
-        
+
         # Initialize the FaceDetection model with the specified confidence
         self.face_detection = self.mp_face_detection.FaceDetection(
             model_selection=model_selection,
@@ -47,12 +47,12 @@ class EnhancedEyeTracker:
 
         # Convert the BGR image to RGB as MediaPipe expects this format
         rgb_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
-        
+
         # Process the frame to find faces
         results = self.face_detection.process(rgb_frame)
-        
+
         face_detected = False
-        
+
         if results.detections:
             face_detected = True
             # Loop through each detected face
@@ -63,11 +63,11 @@ class EnhancedEyeTracker:
                     [bbox_data.xmin, bbox_data.ymin, bbox_data.width, bbox_data.height],
                     [frame_width, frame_height, frame_width, frame_height]
                 ).astype(int)
-                
+
                 # Convert to top-left and bottom-right coordinates for cv2.rectangle
                 top_left = (face_rect[0], face_rect[1])
                 bottom_right = (face_rect[0] + face_rect[2], face_rect[1] + face_rect[3])
-                
+
                 # Draw a white rectangle around the face
                 cv2.rectangle(annotated_frame, top_left, bottom_right, color=(255, 255, 255), thickness=2)
 
@@ -76,7 +76,7 @@ class EnhancedEyeTracker:
                 score_text = f"Confidence: {confidence_score:.2%}"
                 cv2.putText(annotated_frame, score_text, (face_rect[0], face_rect[1] - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-                
+
                 # --- 3. Draw the 6 Key Facial Keypoints ---
                 keypoints = detection.location_data.relative_keypoints
                 for keypoint in keypoints:
@@ -85,12 +85,54 @@ class EnhancedEyeTracker:
                     cv2.circle(annotated_frame, keypoint_px, 4, (0, 255, 0), -1)
         else:
             # If no face is found, display a clear message
-            cv2.putText(annotated_frame, "Face Not Detected", (50, 50), 
+            cv2.putText(annotated_frame, "Face Not Detected", (50, 50),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
         data = {
             'face_detected': face_detected,
             'success': True
         }
-        
+
         return data, annotated_frame
+
+    def process_frame(self, frame: np.ndarray) -> Dict[str, Any]:
+        """
+        Process a single frame and return face detection results.
+
+        Args:
+            frame: Input BGR image from camera
+
+        Returns:
+            Dictionary with detection results including bounding box
+        """
+        if self.face_detection is None:
+            return {'face_detected': False}
+
+        # Convert BGR to RGB for MediaPipe
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Process with MediaPipe
+        results = self.face_detection.process(rgb_frame)
+
+        if results.detections:
+            detection = results.detections[0]
+            bbox = detection.location_data.relative_bounding_box
+
+            h, w, _ = frame.shape
+            x = int(bbox.xmin * w)
+            y = int(bbox.ymin * h)
+            width = int(bbox.width * w)
+            height = int(bbox.height * h)
+
+            return {
+                'face_detected': True,
+                'num_faces': len(results.detections),
+                'bbox': {
+                    'x': x,
+                    'y': y,
+                    'width': width,
+                    'height': height
+                }
+            }
+
+        return {'face_detected': False}

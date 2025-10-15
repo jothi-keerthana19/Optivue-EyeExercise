@@ -130,6 +130,42 @@ class EnhancedEyeTrackingServer:
                 # Return a default "not detected" status
                 return jsonify({'success': True, 'face_detected': False})
             return jsonify(self.last_detection_result)
+        
+        @self.app.route('/api/enhanced-eye-tracking/detect_face', methods=['POST'])
+        def detect_face():
+            """Receive frame from browser and detect face using MediaPipe."""
+            try:
+                if 'frame' not in request.files:
+                    return jsonify({'success': False, 'face_detected': False, 'message': 'No frame provided'}), 400
+                
+                file = request.files['frame']
+                file_bytes = file.read()
+                
+                if len(file_bytes) == 0:
+                    return jsonify({'success': False, 'face_detected': False, 'message': 'Empty frame'}), 400
+                
+                npimg = np.frombuffer(file_bytes, np.uint8)
+                frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+                
+                if frame is None:
+                    return jsonify({'success': False, 'face_detected': False, 'message': 'Invalid frame'}), 400
+                
+                result = self.eye_tracker.process_frame(frame)
+                
+                return jsonify({
+                    'success': True,
+                    'face_detected': result.get('face_detected', False),
+                    'bbox': result.get('bbox', None)
+                })
+                
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                return jsonify({
+                    'success': False,
+                    'face_detected': False,
+                    'message': str(e)
+                }), 500
 
         @self.app.route('/api/enhanced-eye-tracking/video_feed')
         def video_feed():
