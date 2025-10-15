@@ -445,6 +445,16 @@
         let exerciseStartTime = 0;
 
         // Exercise Patterns - Calibration dots move in pattern direction
+        // Each exercise has a duration in seconds
+        const exerciseConfig = {
+            '9-point': { duration: 60, holdTime: 1500, transitionTime: 400 },
+            'circular': { duration: 45, holdTime: 800, transitionTime: 300 },
+            'horizontal': { duration: 45, holdTime: 800, transitionTime: 300 },
+            'vertical': { duration: 45, holdTime: 800, transitionTime: 300 },
+            'figure-eight': { duration: 60, holdTime: 1000, transitionTime: 400 },
+            'diagonal-sweep': { duration: 60, holdTime: 1000, transitionTime: 400 }
+        };
+
         const exercisePatterns = {
             '9-point': [
                 { x: 20, y: 20 },   // Top-left
@@ -541,10 +551,12 @@
                     // Show camera preview
                     document.getElementById('camera-container').classList.add('active');
                     
-                    // Show demo mode notification if applicable
-                    if (cameraData.message && cameraData.message.includes('demo mode')) {
-                        showNotification('Running in demo mode - simulated face detection active');
-                        setTimeout(hideNotification, 3000);
+                    // Check for camera errors
+                    if (!cameraData.success) {
+                        showNotification(cameraData.message || 'Failed to start camera');
+                        toggle.checked = false;
+                        trackingEnabled = false;
+                        return;
                     }
                     
                     // Start polling
@@ -701,37 +713,52 @@
         // Run Exercise Pattern
         async function runExercisePattern() {
             const pattern = exercisePatterns[selectedExercise];
+            const config = exerciseConfig[selectedExercise];
             const dot = document.getElementById('calibration-point');
             const area = document.getElementById('exercise-area');
             const areaRect = area.getBoundingClientRect();
 
             dot.classList.add('active');
 
-            // Determine movement speed based on exercise type
-            const holdDuration = ['9-point'].includes(selectedExercise) ? 3000 : 1500;
-            const transitionTime = ['circular', 'figure-eight'].includes(selectedExercise) ? 800 : 500;
+            const exerciseDuration = config.duration * 1000; // Convert to milliseconds
+            const startTime = Date.now();
+            let cycleCount = 0;
 
-            for (let i = 0; i < pattern.length; i++) {
-                if (currentState !== AppState.RUNNING) {
+            // Loop the pattern until exercise duration is complete
+            while (currentState === AppState.RUNNING) {
+                const elapsed = Date.now() - startTime;
+                
+                // Check if exercise time is up
+                if (elapsed >= exerciseDuration) {
+                    completeExercise();
                     break;
                 }
 
-                const point = pattern[i];
-                const x = (point.x / 100) * areaRect.width;
-                const y = (point.y / 100) * areaRect.height;
+                for (let i = 0; i < pattern.length; i++) {
+                    if (currentState !== AppState.RUNNING) {
+                        break;
+                    }
 
-                // Smooth transition
-                dot.style.transition = `all ${transitionTime}ms ease-in-out`;
-                dot.style.left = `${x}px`;
-                dot.style.top = `${y}px`;
+                    const point = pattern[i];
+                    const x = (point.x / 100) * areaRect.width;
+                    const y = (point.y / 100) * areaRect.height;
 
-                // Hold at position
-                await sleep(holdDuration);
-            }
+                    // Smooth transition with configured speed
+                    dot.style.transition = `all ${config.transitionTime}ms ease-in-out`;
+                    dot.style.left = `${x}px`;
+                    dot.style.top = `${y}px`;
 
-            // Exercise complete
-            if (currentState === AppState.RUNNING) {
-                completeExercise();
+                    // Hold at position with configured duration
+                    await sleep(config.holdTime);
+                    
+                    // Check time again
+                    if (Date.now() - startTime >= exerciseDuration) {
+                        completeExercise();
+                        return;
+                    }
+                }
+                
+                cycleCount++;
             }
         }
 
@@ -839,12 +866,19 @@
 
         // Timer Functions
         function startTimer() {
-            let seconds = 0;
+            const totalSeconds = exerciseConfig[selectedExercise].duration;
+            let remainingSeconds = totalSeconds;
+            
             timerInterval = setInterval(() => {
                 if (currentState === AppState.RUNNING) {
-                    seconds++;
-                    const minutes = Math.floor(seconds / 60);
-                    const secs = seconds % 60;
+                    remainingSeconds--;
+                    
+                    if (remainingSeconds <= 0) {
+                        remainingSeconds = 0;
+                    }
+                    
+                    const minutes = Math.floor(remainingSeconds / 60);
+                    const secs = remainingSeconds % 60;
                     document.getElementById('timer-display').textContent = 
                         `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
                 }
