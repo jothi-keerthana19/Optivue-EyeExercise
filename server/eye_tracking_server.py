@@ -63,10 +63,21 @@ class EyeTrackingServer:
                 self.cap = cv2.VideoCapture(0)
                 
                 if not self.cap.isOpened():
+                    # Enable demo mode if no physical camera
+                    print("No physical camera detected, enabling demo mode")
+                    self.demo_mode = True
+                    self.camera_active = True
+                    
+                    # Start demo frame thread
+                    self.frame_thread_active = True
+                    self.frame_thread = threading.Thread(target=self._generate_demo_frames)
+                    self.frame_thread.daemon = True
+                    self.frame_thread.start()
+                    
                     return jsonify({
-                        'success': False,
-                        'message': 'Failed to open camera'
-                    }), 500
+                        'success': True,
+                        'message': 'Camera started in demo mode (no physical camera detected)'
+                    })
                 
                 # Set camera properties
                 self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -74,6 +85,7 @@ class EyeTrackingServer:
                 self.cap.set(cv2.CAP_PROP_FPS, 30)
                 
                 self.camera_active = True
+                self.demo_mode = False
                 
                 # Start frame reading thread
                 self.frame_thread_active = True
@@ -166,6 +178,13 @@ class EyeTrackingServer:
                         'message': 'Tracking not active'
                     })
                 
+                # In demo mode, return simulated face detection
+                if self.demo_mode:
+                    return jsonify({
+                        'success': True,
+                        'face_detected': self.demo_face_present
+                    })
+                
                 with self.frame_lock:
                     if self.current_frame is None:
                         return jsonify({
@@ -232,6 +251,33 @@ class EyeTrackingServer:
                         self.current_frame = frame
             
             time.sleep(0.01)  # Small delay to prevent CPU overload
+    
+    def _generate_demo_frames(self):
+        """Generate demo frames when no physical camera is available."""
+        while self.frame_thread_active and self.camera_active:
+            # Create a demo frame with face detection visualization
+            frame = np.zeros((480, 640, 3), dtype=np.uint8)
+            
+            # Add gradient background
+            for i in range(480):
+                frame[i, :] = [int(40 + i * 0.1), int(60 + i * 0.15), int(80 + i * 0.2)]
+            
+            # Add "DEMO MODE" text
+            cv2.putText(frame, "DEMO MODE", (200, 240), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
+            cv2.putText(frame, "Face Detection Active", (180, 280), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, (200, 200, 200), 2)
+            
+            # Add simulated face rectangle if demo face is present
+            if self.demo_face_present:
+                cv2.rectangle(frame, (200, 120), (440, 360), (0, 255, 0), 2)
+                cv2.circle(frame, (280, 200), 5, (0, 255, 255), -1)  # Left eye
+                cv2.circle(frame, (360, 200), 5, (0, 255, 255), -1)  # Right eye
+            
+            with self.frame_lock:
+                self.current_frame = frame
+            
+            time.sleep(0.033)  # ~30 FPS
     
     def run(self):
         """Start the Flask server."""

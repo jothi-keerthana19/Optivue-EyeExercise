@@ -271,6 +271,33 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="exercise-item p-3" data-exercise="vertical" onclick="selectExercise('vertical')">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-arrow-down-up me-3" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <h6 class="mb-0">Vertical Sweep</h6>
+                                    <small class="text-muted">Up and down eye movement</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exercise-item p-3" data-exercise="figure-eight" onclick="selectExercise('figure-eight')">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-infinity me-3" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <h6 class="mb-0">Figure Eight</h6>
+                                    <small class="text-muted">Infinity pattern movement</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="exercise-item p-3" data-exercise="diagonal-sweep" onclick="selectExercise('diagonal-sweep')">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-slash-lg me-3" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <h6 class="mb-0">Diagonal Sweep</h6>
+                                    <small class="text-muted">Diagonal eye movement patterns</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -417,7 +444,7 @@
         let wasFocused = true;
         let exerciseStartTime = 0;
 
-        // Exercise Patterns
+        // Exercise Patterns - Calibration dots move in pattern direction
         const exercisePatterns = {
             '9-point': [
                 { x: 20, y: 20 },   // Top-left
@@ -430,18 +457,57 @@
                 { x: 20, y: 50 },   // Middle-left
                 { x: 50, y: 50 }    // Center
             ],
-            'circular': [
-                { x: 50, y: 20 }, { x: 65, y: 25 }, { x: 75, y: 35 },
-                { x: 80, y: 50 }, { x: 75, y: 65 }, { x: 65, y: 75 },
-                { x: 50, y: 80 }, { x: 35, y: 75 }, { x: 25, y: 65 },
-                { x: 20, y: 50 }, { x: 25, y: 35 }, { x: 35, y: 25 }
-            ],
+            'circular': generateCircularPattern(50, 50, 30, 16),
             'horizontal': [
-                { x: 20, y: 50 }, { x: 35, y: 50 }, { x: 50, y: 50 },
-                { x: 65, y: 50 }, { x: 80, y: 50 }, { x: 65, y: 50 },
-                { x: 50, y: 50 }, { x: 35, y: 50 }, { x: 20, y: 50 }
+                { x: 15, y: 50 }, { x: 25, y: 50 }, { x: 35, y: 50 }, { x: 45, y: 50 },
+                { x: 55, y: 50 }, { x: 65, y: 50 }, { x: 75, y: 50 }, { x: 85, y: 50 },
+                { x: 75, y: 50 }, { x: 65, y: 50 }, { x: 55, y: 50 }, { x: 45, y: 50 },
+                { x: 35, y: 50 }, { x: 25, y: 50 }, { x: 15, y: 50 }
+            ],
+            'vertical': [
+                { x: 50, y: 15 }, { x: 50, y: 25 }, { x: 50, y: 35 }, { x: 50, y: 45 },
+                { x: 50, y: 55 }, { x: 50, y: 65 }, { x: 50, y: 75 }, { x: 50, y: 85 },
+                { x: 50, y: 75 }, { x: 50, y: 65 }, { x: 50, y: 55 }, { x: 50, y: 45 },
+                { x: 50, y: 35 }, { x: 50, y: 25 }, { x: 50, y: 15 }
+            ],
+            'figure-eight': generateFigureEightPattern(50, 50, 25, 20),
+            'diagonal-sweep': [
+                { x: 20, y: 20 }, { x: 30, y: 30 }, { x: 40, y: 40 }, { x: 50, y: 50 },
+                { x: 60, y: 60 }, { x: 70, y: 70 }, { x: 80, y: 80 },
+                { x: 70, y: 70 }, { x: 60, y: 60 }, { x: 50, y: 50 }, { x: 40, y: 40 },
+                { x: 30, y: 30 }, { x: 20, y: 20 },
+                { x: 80, y: 20 }, { x: 70, y: 30 }, { x: 60, y: 40 }, { x: 50, y: 50 },
+                { x: 40, y: 60 }, { x: 30, y: 70 }, { x: 20, y: 80 },
+                { x: 30, y: 70 }, { x: 40, y: 60 }, { x: 50, y: 50 }, { x: 60, y: 40 },
+                { x: 70, y: 30 }, { x: 80, y: 20 }
             ]
         };
+
+        // Generate smooth circular pattern
+        function generateCircularPattern(cx, cy, radius, points) {
+            const pattern = [];
+            for (let i = 0; i < points; i++) {
+                const angle = (i / points) * 2 * Math.PI;
+                pattern.push({
+                    x: cx + radius * Math.cos(angle),
+                    y: cy + radius * Math.sin(angle)
+                });
+            }
+            return pattern;
+        }
+
+        // Generate figure-eight pattern
+        function generateFigureEightPattern(cx, cy, width, height) {
+            const pattern = [];
+            const points = 24;
+            for (let i = 0; i < points; i++) {
+                const t = (i / points) * 2 * Math.PI;
+                const x = cx + (width * Math.sin(t));
+                const y = cy + (height * Math.sin(t) * Math.cos(t));
+                pattern.push({ x, y });
+            }
+            return pattern;
+        }
 
         // Select Exercise
         function selectExercise(exercise) {
@@ -467,11 +533,19 @@
             if (trackingEnabled) {
                 // Start camera and tracking
                 try {
-                    await fetch('/api/start_camera', { method: 'POST' });
+                    const cameraResponse = await fetch('/api/start_camera', { method: 'POST' });
+                    const cameraData = await cameraResponse.json();
+                    
                     await fetch('/api/start_tracking', { method: 'POST' });
                     
                     // Show camera preview
                     document.getElementById('camera-container').classList.add('active');
+                    
+                    // Show demo mode notification if applicable
+                    if (cameraData.message && cameraData.message.includes('demo mode')) {
+                        showNotification('Running in demo mode - simulated face detection active');
+                        setTimeout(hideNotification, 3000);
+                    }
                     
                     // Start polling
                     startFocusPolling();
@@ -484,6 +558,7 @@
                     console.error('Error starting tracking:', error);
                     toggle.checked = false;
                     trackingEnabled = false;
+                    showNotification('Failed to start tracking: ' + error.message);
                 }
             } else {
                 // Stop tracking
@@ -632,6 +707,10 @@
 
             dot.classList.add('active');
 
+            // Determine movement speed based on exercise type
+            const holdDuration = ['9-point'].includes(selectedExercise) ? 3000 : 1500;
+            const transitionTime = ['circular', 'figure-eight'].includes(selectedExercise) ? 800 : 500;
+
             for (let i = 0; i < pattern.length; i++) {
                 if (currentState !== AppState.RUNNING) {
                     break;
@@ -641,11 +720,13 @@
                 const x = (point.x / 100) * areaRect.width;
                 const y = (point.y / 100) * areaRect.height;
 
+                // Smooth transition
+                dot.style.transition = `all ${transitionTime}ms ease-in-out`;
                 dot.style.left = `${x}px`;
                 dot.style.top = `${y}px`;
 
-                // Hold at position for 5 seconds
-                await sleep(5000);
+                // Hold at position
+                await sleep(holdDuration);
             }
 
             // Exercise complete
