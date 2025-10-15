@@ -528,34 +528,49 @@
             }
         }
 
+        let videoStream = null;
+        let videoElement = null;
+        let canvasElement = null;
+
         async function toggleTracking() {
             const toggle = document.getElementById('trackingToggle');
             trackingEnabled = toggle.checked;
 
             if (trackingEnabled) {
                 try {
-                    // Start the backend camera
-                    const startResponse = await fetch('/api/enhanced-eye-tracking/start_camera', {
-                        method: 'POST'
+                    // Request browser camera access
+                    videoStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            width: 640, 
+                            height: 480,
+                            facingMode: 'user'
+                        } 
                     });
                     
-                    if (!startResponse.ok) {
-                        throw new Error('Failed to start camera on backend');
+                    // Create video element if it doesn't exist
+                    if (!videoElement) {
+                        videoElement = document.createElement('video');
+                        videoElement.autoplay = true;
+                        videoElement.playsInline = true;
+                        videoElement.style.display = 'none';
+                        document.body.appendChild(videoElement);
                     }
                     
-                    // Start tracking
-                    const trackResponse = await fetch('/api/enhanced-eye-tracking/start_tracking', {
-                        method: 'POST'
-                    });
-                    
-                    if (!trackResponse.ok) {
-                        throw new Error('Failed to start tracking');
+                    if (!canvasElement) {
+                        canvasElement = document.createElement('canvas');
+                        canvasElement.width = 640;
+                        canvasElement.height = 480;
+                        canvasElement.style.display = 'none';
+                        document.body.appendChild(canvasElement);
                     }
                     
-                    // Show the camera container with the backend video feed
+                    videoElement.srcObject = videoStream;
+                    
+                    // Show the camera container with the backend processed feed
                     document.getElementById('camera-container').classList.add('active');
                     
-                    // Start polling for detection data
+                    // Start sending frames to backend and polling for results
+                    startFrameCapture();
                     startFocusPolling();
                     
                     if (selectedExercise) {
@@ -568,27 +583,57 @@
                     console.error('Error starting camera:', error);
                     toggle.checked = false;
                     trackingEnabled = false;
-                    
-                    // Check if it's a camera hardware issue
-                    const errorMsg = error.message || 'Unknown error';
-                    if (errorMsg.includes('camera') || errorMsg.includes('Camera')) {
-                        showNotification('Camera not available. This environment may not have camera access.', 'danger');
-                    } else {
-                        showNotification('Failed to start camera: ' + errorMsg, 'danger');
-                    }
+                    showNotification('Failed to access camera. Please ensure camera permissions are granted.', 'danger');
                 }
             } else {
-                // Stop tracking and camera
-                try {
-                    await fetch('/api/enhanced-eye-tracking/stop_tracking', { method: 'POST' });
-                    await fetch('/api/enhanced-eye-tracking/stop_camera', { method: 'POST' });
-                } catch (error) {
-                    console.error('Error stopping camera:', error);
+                // Stop camera stream
+                stopFrameCapture();
+                stopFocusPolling();
+                
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                    videoStream = null;
                 }
                 
-                stopFocusPolling();
                 document.getElementById('camera-container').classList.remove('active');
                 document.getElementById('startBtn').disabled = true;
+            }
+        }
+
+        let frameCaptureInterval = null;
+
+        function startFrameCapture() {
+            if (frameCaptureInterval) return;
+            
+            frameCaptureInterval = setInterval(async () => {
+                if (!videoElement || !canvasElement || !trackingEnabled) return;
+                
+                try {
+                    const ctx = canvasElement.getContext('2d');
+                    ctx.drawImage(videoElement, 0, 0, 640, 480);
+                    
+                    // Convert canvas to blob and send to backend
+                    canvasElement.toBlob(async (blob) => {
+                        if (!blob) return;
+                        
+                        const formData = new FormData();
+                        formData.append('frame', blob, 'frame.jpg');
+                        
+                        await fetch('/api/enhanced-eye-tracking/process_frame', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    }, 'image/jpeg', 0.8);
+                } catch (error) {
+                    console.error('Error capturing frame:', error);
+                }
+            }, 100); // Send frames every 100ms
+        }
+
+        function stopFrameCapture() {
+            if (frameCaptureInterval) {
+                clearInterval(frameCaptureInterval);
+                frameCaptureInterval = null;
             }
         }
 
