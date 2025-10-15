@@ -562,6 +562,14 @@
                     
                     browserVideoElement.srcObject = browserVideoStream;
                     
+                    // Wait for video to be ready
+                    await new Promise((resolve) => {
+                        browserVideoElement.onloadedmetadata = () => {
+                            browserVideoElement.play();
+                            resolve();
+                        };
+                    });
+                    
                     // Create canvas for frame capture (hidden)
                     if (!captureCanvas) {
                         captureCanvas = document.getElementById('canvas');
@@ -627,14 +635,28 @@
             
             pollingInterval = setInterval(async () => {
                 if (browserVideoElement && captureCanvas && displayCanvas) {
+                    // Check if video is ready
+                    if (browserVideoElement.readyState < 2) {
+                        return; // Video not ready yet
+                    }
+                    
                     try {
                         // Capture current frame from browser webcam
                         captureContext.drawImage(browserVideoElement, 0, 0, 640, 480);
                         
                         // Convert canvas to blob
-                        const blob = await new Promise(resolve => {
-                            captureCanvas.toBlob(resolve, 'image/jpeg', 0.8);
+                        const blob = await new Promise((resolve, reject) => {
+                            captureCanvas.toBlob((b) => {
+                                if (b) resolve(b);
+                                else reject(new Error('Failed to create blob'));
+                            }, 'image/jpeg', 0.95);
                         });
+                        
+                        if (!blob || blob.size === 0) {
+                            console.error('Empty blob created');
+                            drawVideoWithoutBox();
+                            return;
+                        }
                         
                         // Send frame to backend for face detection
                         const formData = new FormData();
@@ -646,7 +668,8 @@
                         });
                         
                         if (!response.ok) {
-                            console.error('Face detection request failed:', response.status);
+                            const errorText = await response.text();
+                            console.error('Face detection request failed:', response.status, errorText);
                             drawVideoWithoutBox();
                             return;
                         }
