@@ -531,10 +531,12 @@
             }
         }
 
-        let videoStream = null;
-        let videoElement = null;
-        let canvasElement = null;
-        let canvasContext = null;
+        let browserVideoStream = null;
+        let browserVideoElement = null;
+        let captureCanvas = null;
+        let captureContext = null;
+        let displayCanvas = null;
+        let displayContext = null;
 
         async function toggleTracking() {
             const toggle = document.getElementById('trackingToggle');
@@ -543,43 +545,49 @@
             if (trackingEnabled) {
                 try {
                     // Request browser webcam access
-                    videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    browserVideoStream = await navigator.mediaDevices.getUserMedia({ 
                         video: { width: 640, height: 480 } 
                     });
                     
-                    // Create video element for browser webcam
-                    if (!videoElement) {
-                        videoElement = document.createElement('video');
-                        videoElement.autoplay = true;
-                        videoElement.playsInline = true;
-                        videoElement.width = 640;
-                        videoElement.height = 480;
+                    // Create video element for browser webcam (hidden)
+                    if (!browserVideoElement) {
+                        browserVideoElement = document.createElement('video');
+                        browserVideoElement.autoplay = true;
+                        browserVideoElement.playsInline = true;
+                        browserVideoElement.width = 640;
+                        browserVideoElement.height = 480;
+                        browserVideoElement.style.display = 'none';
+                        document.body.appendChild(browserVideoElement);
                     }
                     
-                    videoElement.srcObject = videoStream;
+                    browserVideoElement.srcObject = browserVideoStream;
                     
-                    // Create canvas for frame capture
-                    if (!canvasElement) {
-                        canvasElement = document.getElementById('canvas');
-                        canvasContext = canvasElement.getContext('2d');
-                        canvasElement.width = 640;
-                        canvasElement.height = 480;
+                    // Create canvas for frame capture (hidden)
+                    if (!captureCanvas) {
+                        captureCanvas = document.getElementById('canvas');
+                        captureContext = captureCanvas.getContext('2d');
+                        captureCanvas.width = 640;
+                        captureCanvas.height = 480;
                     }
                     
-                    // Replace video feed with local webcam
+                    // Create display canvas for showing video with bounding box
                     const cameraContainer = document.getElementById('camera-container');
-                    const existingVideo = document.getElementById('video');
-                    if (existingVideo) {
-                        existingVideo.remove();
+                    const existingContent = cameraContainer.querySelector('#video, #display-canvas');
+                    if (existingContent) {
+                        existingContent.remove();
                     }
                     
-                    videoElement.id = 'video';
-                    videoElement.style.width = '100%';
-                    videoElement.style.height = '100%';
-                    videoElement.style.objectFit = 'cover';
-                    videoElement.style.transform = 'scaleX(-1)';
+                    displayCanvas = document.createElement('canvas');
+                    displayCanvas.id = 'display-canvas';
+                    displayCanvas.width = 640;
+                    displayCanvas.height = 480;
+                    displayCanvas.style.width = '100%';
+                    displayCanvas.style.height = '100%';
+                    displayCanvas.style.objectFit = 'cover';
+                    displayCanvas.style.transform = 'scaleX(-1)';
+                    displayContext = displayCanvas.getContext('2d');
                     
-                    cameraContainer.appendChild(videoElement);
+                    cameraContainer.appendChild(displayCanvas);
                     cameraContainer.classList.add('active');
                     
                     // Start face detection polling
@@ -589,23 +597,23 @@
                         document.getElementById('startBtn').disabled = false;
                     }
                     
-                    showNotification('Camera started successfully!');
+                    showNotification('Camera started successfully!', 'success');
                     setTimeout(hideNotification, 2000);
                 } catch (error) {
                     console.error('Error starting camera:', error);
                     toggle.checked = false;
                     trackingEnabled = false;
-                    showNotification('Failed to access camera. Please allow camera permissions.');
+                    showNotification('Failed to access camera. Please allow camera permissions.', 'danger');
                 }
             } else {
                 // Stop camera
-                if (videoStream) {
-                    videoStream.getTracks().forEach(track => track.stop());
-                    videoStream = null;
+                if (browserVideoStream) {
+                    browserVideoStream.getTracks().forEach(track => track.stop());
+                    browserVideoStream = null;
                 }
                 
-                if (videoElement) {
-                    videoElement.srcObject = null;
+                if (browserVideoElement) {
+                    browserVideoElement.srcObject = null;
                 }
                 
                 stopFocusPolling();
@@ -618,14 +626,14 @@
             if (pollingInterval) return;
             
             pollingInterval = setInterval(async () => {
-                if (currentState === AppState.RUNNING && videoElement && canvasElement) {
+                if (browserVideoElement && captureCanvas && displayCanvas) {
                     try {
                         // Capture current frame from browser webcam
-                        canvasContext.drawImage(videoElement, 0, 0, 640, 480);
+                        captureContext.drawImage(browserVideoElement, 0, 0, 640, 480);
                         
                         // Convert canvas to blob
                         const blob = await new Promise(resolve => {
-                            canvasElement.toBlob(resolve, 'image/jpeg', 0.8);
+                            captureCanvas.toBlob(resolve, 'image/jpeg', 0.8);
                         });
                         
                         // Send frame to backend for face detection
@@ -639,45 +647,51 @@
                         
                         if (!response.ok) {
                             console.error('Face detection request failed:', response.status);
+                            drawVideoWithoutBox();
                             return;
                         }
                         
                         const data = await response.json();
                         handleFocusData(data);
                         
-                        // If face detected, draw bounding box on video
+                        // Draw video frame with or without bounding box
                         if (data.face_detected && data.bbox) {
                             drawBoundingBox(data.bbox);
+                        } else {
+                            drawVideoWithoutBox();
                         }
                     } catch (error) {
                         console.error('Focus polling error:', error);
+                        drawVideoWithoutBox();
                     }
                 }
             }, 500);
         }
         
+        function drawVideoWithoutBox() {
+            if (!displayContext || !browserVideoElement) return;
+            displayContext.clearRect(0, 0, 640, 480);
+            displayContext.drawImage(browserVideoElement, 0, 0, 640, 480);
+        }
+        
         function drawBoundingBox(bbox) {
-            if (!canvasElement || !canvasContext) return;
+            if (!displayContext || !browserVideoElement) return;
             
-            // Clear previous drawings
-            canvasContext.clearRect(0, 0, 640, 480);
-            canvasContext.drawImage(videoElement, 0, 0, 640, 480);
+            // Clear and draw video frame
+            displayContext.clearRect(0, 0, 640, 480);
+            displayContext.drawImage(browserVideoElement, 0, 0, 640, 480);
             
             // Draw bounding box
-            canvasContext.strokeStyle = '#00FF00';
-            canvasContext.lineWidth = 3;
-            canvasContext.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+            displayContext.strokeStyle = '#00FF00';
+            displayContext.lineWidth = 3;
+            displayContext.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
             
-            // Draw label
-            canvasContext.fillStyle = '#00FF00';
-            canvasContext.font = '16px Arial';
-            canvasContext.fillText('Face Detected', bbox.x, bbox.y - 5);
-            
-            // Update video element with annotated frame
-            const dataURL = canvasElement.toDataURL('image/jpeg', 0.8);
-            if (videoElement) {
-                videoElement.src = dataURL;
-            }
+            // Draw label with background
+            displayContext.fillStyle = 'rgba(0, 255, 0, 0.7)';
+            displayContext.fillRect(bbox.x, bbox.y - 25, 140, 25);
+            displayContext.fillStyle = '#000000';
+            displayContext.font = 'bold 16px Arial';
+            displayContext.fillText('Face Detected', bbox.x + 5, bbox.y - 7);
         }
 
         function stopFocusPolling() {
@@ -731,10 +745,10 @@
                         wasFocused = false;
                     }
 
-                    showNotification('Face not detected. Please look at the camera.');
+                    showNotification('Face not detected. Please look at the camera.', 'danger');
                     
                     statusBadge.className = 'not-focused';
-                    statusText.textContent = 'Face Lost';
+                    statusText.textContent = 'Face Not Detected';
                 }
             }
         }
@@ -956,10 +970,20 @@
             }
         }
 
-        function showNotification(message) {
+        function showNotification(message, type = 'warning') {
             const alert = document.getElementById('notification-alert');
             document.getElementById('notification-message').textContent = message;
-            alert.classList.add('show');
+            
+            // Update alert class based on type
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            
+            // Update icon based on type
+            const icon = type === 'success' ? 'bi-check-circle' : 
+                        type === 'danger' ? 'bi-exclamation-triangle' : 
+                        'bi-info-circle';
+            
+            const messageElement = document.getElementById('notification-message');
+            messageElement.innerHTML = `<i class="bi ${icon} me-2"></i>${message}`;
         }
 
         function hideNotification() {
