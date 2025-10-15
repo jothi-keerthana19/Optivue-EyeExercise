@@ -1,0 +1,27 @@
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 145-764-307
+172.31.93.194 - - [15/Oct/2025 04:36:00] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 04:36:00] "GET /api/video_feed HTTP/1.1" 200 -
+172.31.93.194 - - [15/Oct/2025 04:36:00] "GET /api/video_feed HTTP/1.1" 200 -
+172.31.93.194 - - [15/Oct/2025 04:36:05] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 04:36:05] "GET /api/video_feed HTTP/1.1" 200 -
+172.31.93.194 - - [15/Oct/2025 04:36:05] "GET /api/video_feed HTTP/1.1" 200 -
+[ WARN:0@12.488] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video0): can't open camera by index
+[ERROR:0@12.488] global obsensor_uvc_stream_channel.cpp:158 getStreamChannelGroup Camera index out of range
+127.0.0.1 - - [15/Oct/2025 04:36:09] "POST /api/start_camera HTTP/1.1" 500 -
+172.31.93.194 - - [15/Oct/2025 04:36:09] "POST /api/start_camera HTTP/1.1" 500 -
+[ WARN:1@12.802] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video0): can't open camera by index
+[ERROR:1@12.802] global obsensor_uvc_stream_channel.cpp:158 getStreamChannelGroup Camera index out of range
+127.0.0.1 - - [15/Oct/2025 04:36:09] "POST /api/start_tracking HTTP/1.1" 500 -
+172.31.93.194 - - [15/Oct/2025 04:36:09] "POST /api/start_tracking HTTP/1.1" 500 -
+[ WARN:2@54.193] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video0): can't open camera by index
+[ERROR:2@54.194] global obsensor_uvc_stream_channel.cpp:158 getStreamChannelGroup Camera index out of range
+127.0.0.1 - - [15/Oct/2025 04:36:51] "POST /api/start_camera HTTP/1.1" 500 -
+172.31.93.194 - - [15/Oct/2025 04:36:51] "POST /api/start_camera HTTP/1.1" 500 -
+[ WARN:3@55.254] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video0): can't open camera by index
+[ERROR:3@55.254] global obsensor_uvc_stream_channel.cpp:158 getStreamChannelGroup Camera index out of range
+127.0.0.1 - - [15/Oct/2025 04:36:52] "POST /api/start_tracking HTTP/1.1" 500 -
+172.31.93.194 - - [15/Oct/2025 04:36:52] "POST /api/start_tracking HTTP/1.1" 500 -
+^C
