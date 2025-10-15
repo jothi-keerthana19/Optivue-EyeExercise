@@ -1,3 +1,4 @@
+
 import cv2
 import numpy as np
 import mediapipe as mp
@@ -10,7 +11,7 @@ class EnhancedEyeTracker:
     visual feedback (bounding box, keypoints, and confidence score).
     """
 
-    def __init__(self, model_selection: int = 1, min_detection_confidence: float = 0.7) -> None:
+    def __init__(self, model_selection: int = 1, min_detection_confidence: float = 0.5) -> None:
         """
         Initializes the tracker with the MediaPipe FaceDetection model.
 
@@ -18,12 +19,13 @@ class EnhancedEyeTracker:
             model_selection (int): 0 for short-range model (2 meters), 1 for full-range (5 meters).
                                    1 is generally more versatile and accurate.
             min_detection_confidence (float): Minimum confidence value (from 0.0 to 1.0) for a
-                                              detection to be considered successful. A higher value
-                                              like 0.7 increases accuracy by filtering out weak detections.
+                                              detection to be considered successful.
         """
         self.mp_face_detection = mp.solutions.face_detection
+        self.mp_drawing = mp.solutions.drawing_utils
 
         # Initialize the FaceDetection model with the specified confidence
+        # Lower confidence threshold to detect faces more easily
         self.face_detection = self.mp_face_detection.FaceDetection(
             model_selection=model_selection,
             min_detection_confidence=min_detection_confidence
@@ -57,34 +59,30 @@ class EnhancedEyeTracker:
                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
             return {'face_detected': False, 'success': False, 'error': 'Invalid frame shape'}, empty_frame
         
+        # Create a copy for annotation
         annotated_frame = frame.copy()
         frame_height, frame_width, _ = annotated_frame.shape
 
-        # Convert the BGR image to RGB as MediaPipe expects this format
-        rgb_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+        # Convert BGR to RGB - MediaPipe requires RGB format
+        # IMPORTANT: Create a fresh copy and mark as NOT writeable for MediaPipe
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
-        # MediaPipe requires specific image properties - create a clean copy
-        # Ensure uint8 data type
-        if rgb_frame.dtype != np.uint8:
-            rgb_frame = rgb_frame.astype(np.uint8)
-        
-        # Ensure the frame is writable and contiguous
-        rgb_frame = np.ascontiguousarray(rgb_frame)
-        rgb_frame.flags.writeable = True
+        # MediaPipe requires the image to be marked as not writeable during processing
+        rgb_frame.flags.writeable = False
 
         # Process the frame to find faces
         try:
             results = self.face_detection.process(rgb_frame)
-        except ValueError as e:
-            if "Empty packets" in str(e) or "Graph has errors" in str(e):
-                print(f"MediaPipe processing error: {e}")
-                print(f"Frame info - shape: {rgb_frame.shape}, dtype: {rgb_frame.dtype}, contiguous: {rgb_frame.flags['C_CONTIGUOUS']}, writable: {rgb_frame.flags['WRITEABLE']}")
-                print(f"Frame data range: min={rgb_frame.min()}, max={rgb_frame.max()}, mean={rgb_frame.mean()}")
-                # Return a frame with error message
-                cv2.putText(annotated_frame, "MediaPipe Error - Check Console", (50, 50),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
-                return {'face_detected': False, 'success': False, 'error': str(e)}, annotated_frame
-            raise
+            
+            # Mark frame as writeable again after processing
+            rgb_frame.flags.writeable = True
+            
+        except Exception as e:
+            print(f"MediaPipe processing error: {e}")
+            print(f"Frame info - shape: {rgb_frame.shape}, dtype: {rgb_frame.dtype}")
+            cv2.putText(annotated_frame, "MediaPipe Error - Check Console", (50, 50),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
+            return {'face_detected': False, 'success': False, 'error': str(e)}, annotated_frame
 
         face_detected = False
 
@@ -94,30 +92,45 @@ class EnhancedEyeTracker:
             for detection in results.detections:
                 # --- 1. Draw the Bounding Box ---
                 bbox_data = detection.location_data.relative_bounding_box
-                face_rect = np.multiply(
-                    [bbox_data.xmin, bbox_data.ymin, bbox_data.width, bbox_data.height],
-                    [frame_width, frame_height, frame_width, frame_height]
-                ).astype(int)
+                
+                # Calculate pixel coordinates
+                x = int(bbox_data.xmin * frame_width)
+                y = int(bbox_data.ymin * frame_height)
+                w = int(bbox_data.width * frame_width)
+                h = int(bbox_data.height * frame_height)
 
-                # Convert to top-left and bottom-right coordinates for cv2.rectangle
-                top_left = (face_rect[0], face_rect[1])
-                bottom_right = (face_rect[0] + face_rect[2], face_rect[1] + face_rect[3])
-
-                # Draw a white rectangle around the face
-                cv2.rectangle(annotated_frame, top_left, bottom_right, color=(255, 255, 255), thickness=2)
+                # Draw a green rectangle around the face
+                cv2.rectangle(annotated_frame, (x, y), (x + w, y + h), color=(0, 255, 0), thickness=3)
 
                 # --- 2. Draw the Confidence Score ---
                 confidence_score = detection.score[0]
                 score_text = f"Confidence: {confidence_score:.2%}"
-                cv2.putText(annotated_frame, score_text, (face_rect[0], face_rect[1] - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                
+                # Draw background rectangle for text
+                text_size = cv2.getTextSize(score_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+                cv2.rectangle(annotated_frame, (x, y - 30), (x + text_size[0], y), (0, 255, 0), -1)
+                
+                # Draw text
+                cv2.putText(annotated_frame, score_text, (x, y - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
 
                 # --- 3. Draw the 6 Key Facial Keypoints ---
                 keypoints = detection.location_data.relative_keypoints
-                for keypoint in keypoints:
-                    keypoint_px = (int(keypoint.x * frame_width), int(keypoint.y * frame_height))
-                    # Draw a small circle for each keypoint
-                    cv2.circle(annotated_frame, keypoint_px, 4, (0, 255, 0), -1)
+                for idx, keypoint in enumerate(keypoints):
+                    keypoint_px_x = int(keypoint.x * frame_width)
+                    keypoint_px_y = int(keypoint.y * frame_height)
+                    
+                    # Draw keypoints with different colors
+                    if idx < 2:  # Eyes
+                        color = (255, 0, 0)  # Blue for eyes
+                    elif idx == 2:  # Nose
+                        color = (0, 255, 255)  # Yellow for nose
+                    elif idx < 4:  # Mouth
+                        color = (0, 0, 255)  # Red for mouth
+                    else:  # Ears
+                        color = (255, 255, 0)  # Cyan for ears
+                    
+                    cv2.circle(annotated_frame, (keypoint_px_x, keypoint_px_y), 5, color, -1)
         else:
             # If no face is found, display a clear message
             cv2.putText(annotated_frame, "Face Not Detected", (50, 50),
@@ -141,13 +154,19 @@ class EnhancedEyeTracker:
             Dictionary with detection results including bounding box
         """
         if self.face_detection is None:
-            return {'face_detected': False}
+            return {'face_detected': False, 'success': False}
 
         # Convert BGR to RGB for MediaPipe
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        
+        # Mark as not writeable for MediaPipe processing
+        rgb_frame.flags.writeable = False
 
         # Process with MediaPipe
         results = self.face_detection.process(rgb_frame)
+        
+        # Mark as writeable again
+        rgb_frame.flags.writeable = True
 
         if results.detections:
             detection = results.detections[0]
@@ -161,6 +180,7 @@ class EnhancedEyeTracker:
 
             return {
                 'face_detected': True,
+                'success': True,
                 'num_faces': len(results.detections),
                 'bbox': {
                     'x': x,
@@ -170,4 +190,9 @@ class EnhancedEyeTracker:
                 }
             }
 
-        return {'face_detected': False}
+        return {'face_detected': False, 'success': True}
+    
+    def cleanup(self):
+        """Clean up resources."""
+        if self.face_detection:
+            self.face_detection.close()
