@@ -1,0 +1,650 @@
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+    results = self.face_detection.process(rgb_frame)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 09:53:59] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 09:53:59] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 09:54:01] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 09:54:01] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    result, annotated_frame = self.eye_tracker.process_and_draw_frame(frame)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+    results = self.face_detection.process(rgb_frame)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 09:54:02] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 09:54:02] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ * Detected change in '/home/runner/workspace/server/enhanced_eye_tracker.py', reloading
+ * Restarting with stat
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 143-878-444
+ * Detected change in '/home/runner/workspace/server/enhanced_eye_tracking_server.py', reloading
+ * Restarting with stat
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 143-878-444
+ * Detected change in '/home/runner/workspace/server/enhanced_eye_tracking_server.py', reloading
+ * Restarting with stat
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 143-878-444
+ * Detected change in '/home/runner/workspace/server/enhanced_eye_tracker.py', reloading
+ * Restarting with stat
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 143-878-444
+172.31.66.2 - - [15/Oct/2025 10:00:56] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:00:56] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:00:56] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:00] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:00] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:00] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:00] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:01] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:01] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:01] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:01] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:03] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:03] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:04] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:04] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:06] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:06] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:06] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:06] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:06] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:06] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:08] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:08] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:08] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:08] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:09] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:09] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:09] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:09] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:10] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:10] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:11] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:11] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:12] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:12] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:13] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:13] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:13] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:13] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:13] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:13] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:16] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:16] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:16] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:16] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:16] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:16] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:16] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:16] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:17] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:17] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:17] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:17] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:17] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:18] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:18] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:19] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:19] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0.1 - - [15/Oct/2025 10:01:19] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:01:19] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR processing frame: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Traceback (most recent call last):
+  File "/home/runner/workspace/server/enhanced_eye_tracking_server.py", line 57, in process_frame
+    # Validate frame dimensions
+                              ^^
+  File "/home/runner/workspace/server/enhanced_eye_tracker.py", line 52, in process_and_draw_frame
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solutions/face_detection.py", line 105, in process
+    return super().process(input_data={'image': image})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/mediapipe/python/solution_base.py", line 330, in process
+    self._graph.add_packet_to_input_stream(
+ValueError: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+127.0.0.1 - - [15/Oct/2025 10:01:19] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+172.31.66.2 - - [15/Oct/2025 10:01:19] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 500 -
+127.0.0
