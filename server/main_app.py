@@ -58,10 +58,19 @@ def proxy_to_enhanced_tracking_server(path):
             )
         
         elif request.method == 'POST':
+            # Handle file uploads
+            files = None
+            if request.files:
+                files = {}
+                for key in request.files:
+                    file = request.files[key]
+                    files[key] = (file.filename, file.stream, file.content_type)
+            
             resp = requests.post(
                 url,
                 json=request.get_json() if request.is_json else None,
-                data=request.form if request.form else None
+                data=request.form if request.form else None,
+                files=files
             )
             return Response(
                 resp.content,
@@ -109,10 +118,19 @@ def proxy_to_tracking_server(path):
             )
         
         elif request.method == 'POST':
+            # Handle file uploads
+            files = None
+            if request.files:
+                files = {}
+                for key in request.files:
+                    file = request.files[key]
+                    files[key] = (file.filename, file.stream, file.content_type)
+            
             resp = requests.post(
                 url,
                 json=request.get_json() if request.is_json else None,
-                data=request.form if request.form else None
+                data=request.form if request.form else None,
+                files=files
             )
             return Response(
                 resp.content,
