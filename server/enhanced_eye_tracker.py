@@ -63,20 +63,17 @@ class EnhancedEyeTracker:
         # Convert the BGR image to RGB as MediaPipe expects this format
         rgb_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
         
-        # Ensure the frame is contiguous in memory (MediaPipe requirement)
-        if not rgb_frame.flags['C_CONTIGUOUS']:
-            rgb_frame = np.ascontiguousarray(rgb_frame)
+        # MediaPipe requires specific image properties - create a clean copy
+        # Ensure uint8 data type
+        if rgb_frame.dtype != np.uint8:
+            rgb_frame = rgb_frame.astype(np.uint8)
         
-        # Ensure frame is writable
-        if not rgb_frame.flags['WRITEABLE']:
-            rgb_frame = rgb_frame.copy()
+        # Ensure the frame is writable and contiguous
+        rgb_frame = np.ascontiguousarray(rgb_frame)
+        rgb_frame.flags.writeable = True
 
         # Process the frame to find faces
         try:
-            # MediaPipe can be sensitive to data types - ensure uint8
-            if rgb_frame.dtype != np.uint8:
-                rgb_frame = rgb_frame.astype(np.uint8)
-            
             results = self.face_detection.process(rgb_frame)
         except ValueError as e:
             if "Empty packets" in str(e) or "Graph has errors" in str(e):
