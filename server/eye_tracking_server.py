@@ -23,7 +23,7 @@ class EyeTrackingServer:
         CORS(self.app)  # Enable CORS for cross-origin requests
         
         self.port = port
-        self.eye_tracker = SimplifiedEyeTracker()
+        self.eye_tracker = SimplifiedEyeTracker(min_detection_confidence=0.6)
         self.cap: Optional[cv2.VideoCapture] = None
         self.camera_active = False
         self.tracking_active = False
@@ -280,6 +280,39 @@ class EyeTrackingServer:
                 if ret:
                     # Mirror the frame for natural viewing
                     frame = cv2.flip(frame, 1)
+                    
+                    # Visual debugging: Draw face detection bounding boxes
+                    if self.tracking_active and self.eye_tracker.face_detection:
+                        try:
+                            # Process frame for visual feedback
+                            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                            rgb_frame.flags.setflags(write=False)
+                            
+                            results = self.eye_tracker.face_detection.process(rgb_frame)
+                            
+                            # Draw bounding box if face is detected
+                            if results.detections:
+                                for detection in results.detections:
+                                    bboxC = detection.location_data.relative_bounding_box
+                                    ih, iw, _ = frame.shape
+                                    x = int(bboxC.xmin * iw)
+                                    y = int(bboxC.ymin * ih)
+                                    w = int(bboxC.width * iw)
+                                    h = int(bboxC.height * ih)
+                                    
+                                    # Draw green box around detected face
+                                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                                    
+                                    # Show confidence score
+                                    confidence = detection.score[0] if detection.score else 0
+                                    cv2.putText(frame, f"{confidence:.2f}", (x, y - 10),
+                                              cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                            else:
+                                # Indicate no face detected
+                                cv2.putText(frame, "No Face Detected", (20, 40),
+                                          cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                        except Exception as e:
+                            print(f"Error in visual debugging: {e}")
                     
                     with self.frame_lock:
                         self.current_frame = frame

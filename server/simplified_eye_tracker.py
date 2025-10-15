@@ -1,49 +1,55 @@
+
 """
-Simplified Eye Tracker - Face Detection Only
-This module contains only basic face presence detection using MediaPipe Face Mesh.
-All head pose estimation and drowsiness detection logic has been removed.
+Simplified Eye Tracker - Face Detection with Confidence Thresholds
+This module uses MediaPipe Face Detection for robust face presence detection.
 """
 
 import cv2
 import numpy as np
-from typing import Dict, Optional
+from typing import Dict
 
 try:
     import mediapipe as mp
-    FACE_MESH_AVAILABLE = True
+    FACE_DETECTION_AVAILABLE = True
 except ImportError:
     mp = None
-    FACE_MESH_AVAILABLE = False
+    FACE_DETECTION_AVAILABLE = False
 
 
 class SimplifiedEyeTracker:
     """
-    Simplified eye tracker that only detects face presence.
-    No head pose estimation or drowsiness detection.
+    Simplified eye tracker that detects face presence with confidence thresholds.
+    Uses MediaPipe Face Detection for robust detection.
     """
     
-    def __init__(self) -> None:
-        """Initialize the face mesh detector with basic settings."""
-        self.face_mesh = None
+    def __init__(self, min_detection_confidence: float = 0.6) -> None:
+        """
+        Initialize the face detector with confidence threshold.
+        
+        Args:
+            min_detection_confidence: Minimum confidence (0.0-1.0) for valid detection
+        """
+        self.face_detection = None
+        self.min_detection_confidence = min_detection_confidence
         self._init_mediapipe()
     
     def _init_mediapipe(self) -> None:
-        """Initialize MediaPipe Face Mesh with minimal configuration."""
-        if not FACE_MESH_AVAILABLE:
+        """Initialize MediaPipe Face Detection."""
+        if not FACE_DETECTION_AVAILABLE:
             print("MediaPipe not available")
             return
         
         try:
-            # Initialize with optimized settings for face detection
-            self.face_mesh = mp.solutions.face_mesh.FaceMesh(
-                max_num_faces=1,
-                refine_landmarks=False,
-                min_detection_confidence=0.5,  # Higher threshold for accurate detection
-                min_tracking_confidence=0.5
+            # Initialize Face Detection (not Face Mesh for better performance)
+            self.mp_face_detection = mp.solutions.face_detection
+            self.face_detection = self.mp_face_detection.FaceDetection(
+                min_detection_confidence=self.min_detection_confidence,
+                model_selection=0  # 0 for short range (within 2 meters)
             )
+            print(f"MediaPipe Face Detection initialized with confidence threshold: {self.min_detection_confidence}")
         except Exception as e:
-            self.face_mesh = None
-            print(f"Failed to initialize MediaPipe FaceMesh: {e}")
+            self.face_detection = None
+            print(f"Failed to initialize MediaPipe Face Detection: {e}")
     
     def process_frame(self, frame: np.ndarray) -> Dict[str, object]:
         """
@@ -54,37 +60,50 @@ class SimplifiedEyeTracker:
         
         Returns:
             Dictionary with:
-                - face_detected (bool): True if face landmarks found, False otherwise
+                - face_detected (bool): True if face detected above confidence threshold
                 - success (bool): True if processing succeeded
+                - detections: List of detections (for visual debugging)
         """
-        if self.face_mesh is None:
+        if self.face_detection is None:
             return {
                 'face_detected': False,
                 'success': False,
-                'error': 'Face mesh not initialized'
+                'error': 'Face detection not initialized'
+            }
+        
+        if frame is None:
+            return {
+                'face_detected': False,
+                'success': False,
+                'error': 'Input frame is None'
             }
         
         try:
+            # Mark image as not writeable for performance
+            frame.flags.setflags(write=False)
+            
             # Convert BGR to RGB for MediaPipe
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             
             # Process the frame
-            results = self.face_mesh.process(rgb_frame)
+            results = self.face_detection.process(rgb_frame)
             
-            # Check if any face landmarks were detected
-            face_detected = False
-            if results.multi_face_landmarks and len(results.multi_face_landmarks) > 0:
-                # Get the first (and only) face
-                face_landmarks = results.multi_face_landmarks[0]
-                
-                # Verify we have enough landmarks for a valid detection
-                if len(face_landmarks.landmark) >= 468:  # Full face mesh has 468 landmarks
-                    face_detected = True
+            # Restore writeable flag
+            frame.flags.setflags(write=True)
             
-            return {
-                'face_detected': face_detected,
-                'success': True
-            }
+            # CRITICAL CHECK: results.detections is None or empty if no face found
+            # Only faces above min_detection_confidence threshold are included
+            if results.detections:
+                return {
+                    'face_detected': True,
+                    'success': True,
+                    'detections': results.detections  # Include for visual debugging
+                }
+            else:
+                return {
+                    'face_detected': False,
+                    'success': True
+                }
         
         except Exception as e:
             return {
@@ -95,5 +114,5 @@ class SimplifiedEyeTracker:
     
     def cleanup(self) -> None:
         """Release resources."""
-        if self.face_mesh:
-            self.face_mesh.close()
+        if self.face_detection:
+            self.face_detection.close()
