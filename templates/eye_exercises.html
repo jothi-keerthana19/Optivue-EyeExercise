@@ -639,7 +639,7 @@
         }
 
         let consecutiveFailures = 0;
-        const MAX_CONSECUTIVE_FAILURES = 3;
+        const MAX_CONSECUTIVE_FAILURES = 2;
 
         function handleFocusData(data) {
             const faceDetected = data.face_detected;
@@ -648,24 +648,36 @@
 
             if (faceDetected) {
                 consecutiveFailures = 0;
-                focusTime++;
-                currentFocusStreak++;
                 
-                if (currentFocusStreak > maxFocusStreak) {
-                    maxFocusStreak = currentFocusStreak;
+                // Only count focus time when exercise is running
+                if (currentState === AppState.RUNNING) {
+                    focusTime++;
+                    currentFocusStreak++;
+                    
+                    if (currentFocusStreak > maxFocusStreak) {
+                        maxFocusStreak = currentFocusStreak;
+                    }
                 }
 
                 statusBadge.className = 'focused';
                 statusText.textContent = 'Face Detected';
                 hideNotification();
-                wasFocused = true;
+                
+                if (!wasFocused) {
+                    wasFocused = true;
+                }
             } else {
                 consecutiveFailures++;
                 
-                // Only pause if face is lost for multiple consecutive checks
+                // Trigger distraction after consecutive failures
                 if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-                    if (wasFocused) {
+                    if (wasFocused && currentState === AppState.RUNNING) {
                         distractions++;
+                        
+                        // Save current streak if it's the best
+                        if (currentFocusStreak > maxFocusStreak) {
+                            maxFocusStreak = currentFocusStreak;
+                        }
                         currentFocusStreak = 0;
                         wasFocused = false;
                     }
@@ -811,16 +823,21 @@
         }
 
         function showSummary() {
+            // Calculate total exercise duration in deciseconds (focusTime is in 500ms intervals)
+            totalExerciseDuration = Math.floor((Date.now() - exerciseStartTime) / 500);
+            
             const focusPerformance = totalExerciseDuration > 0 
                 ? Math.round((focusTime / totalExerciseDuration) * 100)
                 : 0;
             
-            const focusTimeSeconds = Math.floor(focusTime / 10);
+            // focusTime is counted in 500ms intervals
+            const focusTimeSeconds = Math.floor((focusTime * 500) / 1000);
             const focusTimeMinutes = Math.floor(focusTimeSeconds / 60);
             const focusTimeRemainder = focusTimeSeconds % 60;
             const focusTimeStr = `${focusTimeMinutes}:${focusTimeRemainder.toString().padStart(2, '0')}`;
             
-            const maxStreakSeconds = Math.floor(maxFocusStreak / 10);
+            // currentFocusStreak is in 500ms intervals
+            const maxStreakSeconds = Math.floor((maxFocusStreak * 500) / 1000);
 
             document.getElementById('focus-performance').textContent = `${focusPerformance}%`;
             document.getElementById('focus-time').textContent = focusTimeStr;
@@ -860,6 +877,7 @@
             maxFocusStreak = 0;
             totalExerciseDuration = 0;
             wasFocused = true;
+            consecutiveFailures = 0;
         }
 
         function startTimer() {

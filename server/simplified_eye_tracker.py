@@ -38,8 +38,8 @@ class SimplifiedEyeTracker:
             self.face_mesh = mp.solutions.face_mesh.FaceMesh(
                 max_num_faces=1,
                 refine_landmarks=False,
-                min_detection_confidence=0.3,  # Lower threshold for better detection
-                min_tracking_confidence=0.3
+                min_detection_confidence=0.5,  # Higher threshold for accurate detection
+                min_tracking_confidence=0.5
             )
         except Exception as e:
             self.face_mesh = None
@@ -73,9 +73,13 @@ class SimplifiedEyeTracker:
             
             # Check if any face landmarks were detected
             face_detected = False
-            if results.multi_face_landmarks:
-                # Face landmarks found - face is present
-                face_detected = True
+            if results.multi_face_landmarks and len(results.multi_face_landmarks) > 0:
+                # Get the first (and only) face
+                face_landmarks = results.multi_face_landmarks[0]
+                
+                # Verify we have enough landmarks for a valid detection
+                if len(face_landmarks.landmark) >= 468:  # Full face mesh has 468 landmarks
+                    face_detected = True
             
             return {
                 'face_detected': face_detected,
