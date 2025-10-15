@@ -1,0 +1,294 @@
+I've analyzed the new error logs and your project structure. The errors you're seeing are happening for two clear reasons, and we can fix them immediately.
+
+404 Not Found Error: Your frontend is still trying to call an old API endpoint named /detect_face. In our new, more efficient architecture, we removed this endpoint. The backend now handles all processing internally. We need to update the frontend to stop calling it.
+
+500 Camera Error: The error can't open camera by index is a classic issue, especially in web-based environments like Replit. It means the Python server is having trouble accessing the webcam hardware.
+
+Here is the definitive plan and the final, corrected code for all necessary files to fix these issues and get your application running perfectly.
+
+## The Plan: Finalizing the Architecture
+Fix the Frontend: We will modify the frontend API library (eyeTracking.ts) to remove the call to the non-existent /detect_face endpoint.
+
+Make the Backend Resilient: We will update the enhanced_eye_tracking_server.py to handle camera errors more gracefully.
+
+Ensure Accuracy: We will use the final version of enhanced_eye_tracker.py which uses the highly accurate FaceDetection model with clear visual feedback.
+
+## 1. Frontend Fix: client/src/lib/eyeTracking.ts (Crucial Update)
+This is the most important fix. The error logs point directly to an issue here. This change aligns your frontend with the modern, efficient backend. Replace the content of this file with the code below.
+
+TypeScript
+
+// client/src/lib/eyeTracking.ts
+
+const API_BASE_URL = 'http://127.0.0.1:5002/api/enhanced-eye-tracking';
+
+// --- FUNCTIONS TO CONTROL THE SERVER ---
+
+export const startCamera = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/start_camera`, { method: 'POST' });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to start camera');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error starting camera:', error);
+    throw error;
+  }
+};
+
+export const stopCamera = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/stop_camera`, { method: 'POST' });
+    return await response.json();
+  } catch (error) {
+    console.error('Error stopping camera:', error);
+    throw error;
+  }
+};
+
+export const startTracking = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/start_tracking`, { method: 'POST' });
+     if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to start tracking');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error starting tracking:', error);
+    throw error;
+  }
+};
+
+export const stopTracking = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/stop_tracking`, { method: 'POST' });
+    return await response.json();
+  } catch (error) {
+    console.error('Error stopping tracking:', error);
+    throw error;
+  }
+};
+
+// --- FUNCTION TO GET DATA FROM THE SERVER ---
+
+export const getGazeData = async () => {
+  try {
+    // This is the correct endpoint for polling data in the new architecture.
+    const response = await fetch(`${API_BASE_URL}/get_enhanced_gaze`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch gaze data');
+    }
+    return await response.json();
+  } catch (error) {
+    // It's normal for this to fail sometimes during server restarts, so we console.warn
+    console.warn('Could not fetch gaze data:', error);
+    // Return a default "not detected" state so the UI doesn't crash
+    return { face_detected: false, success: false };
+  }
+};
+
+// --- REMOVED THE OLD `detectFace` FUNCTION ---
+// The old function that was causing the 404 error has been completely removed.
+// All processing is now handled by the server's background thread.
+
+## 2. Backend Fix: server/enhanced_eye_tracker.py (Final Version)
+This is the final, high-accuracy vision module.
+
+Python
+
+import cv2
+import numpy as np
+import mediapipe as mp
+from typing import Dict, Tuple, Any
+
+class EnhancedEyeTracker:
+    def __init__(self, model_selection: int = 1, min_detection_confidence: float = 0.7) -> None:
+        self.mp_face_detection = mp.solutions.face_detection
+        self.face_detection = self.mp_face_detection.FaceDetection(
+            model_selection=model_selection,
+            min_detection_confidence=min_detection_confidence
+        )
+        print(f"MediaPipe FaceDetection initialized with confidence={min_detection_confidence}")
+
+    def process_and_draw_frame(self, frame: np.ndarray) -> Tuple[Dict[str, Any], np.ndarray]:
+        annotated_frame = frame.copy()
+        frame_height, frame_width, _ = annotated_frame.shape
+        rgb_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+        results = self.face_detection.process(rgb_frame)
+        
+        face_detected = False
+        if results.detections:
+            face_detected = True
+            for detection in results.detections:
+                bbox_data = detection.location_data.relative_bounding_box
+                face_rect = np.multiply(
+                    [bbox_data.xmin, bbox_data.ymin, bbox_data.width, bbox_data.height],
+                    [frame_width, frame_height, frame_width, frame_height]
+                ).astype(int)
+                cv2.rectangle(annotated_frame, face_rect, color=(255, 255, 255), thickness=2)
+                confidence_score = detection.score[0]
+                score_text = f"Confidence: {confidence_score:.2%}"
+                cv2.putText(annotated_frame, score_text, (face_rect[0], face_rect[1] - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        else:
+            cv2.putText(annotated_frame, "Face Not Detected", (50, 50), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+
+        return {'face_detected': face_detected, 'success': True}, annotated_frame
+## 3. Backend Fix: server/enhanced_eye_tracking_server.py (Final Version)
+This is the complete, final server code. It no longer has the /detect_face endpoint and includes more robust camera handling.
+
+Python
+
+from flask import Flask, jsonify, request, Response
+from flask_cors import CORS
+from enhanced_eye_tracker import EnhancedEyeTracker
+import cv2
+import numpy as np
+import threading
+import time
+from typing import Optional, Dict, Any
+
+class EnhancedEyeTrackingServer:
+    def __init__(self):
+        self.app = Flask(__name__)
+        CORS(self.app, resources={r"/api/*": {"origins": "*"}})
+        
+        self.eye_tracker = EnhancedEyeTracker(min_detection_confidence=0.7)
+        
+        self.cap: Optional[cv2.VideoCapture] = None
+        self.camera_active = False
+        self.tracking_active = False
+        self.current_frame: Optional[np.ndarray] = None
+        self.frame_lock = threading.Lock()
+        self.last_detection_result: Optional[Dict[str, Any]] = None
+        self.frame_thread: Optional[threading.Thread] = None
+        self.frame_thread_active = False
+
+        self.setup_routes()
+    
+    def _read_frames(self):
+        print("Starting frame reading and processing thread.")
+        while self.frame_thread_active and self.camera_active:
+            if not (self.cap and self.cap.isOpened()):
+                time.sleep(0.1)
+                continue
+            
+            ret, frame = self.cap.read()
+            if not ret or frame is None:
+                print("Failed to capture a frame from the camera.")
+                time.sleep(0.1)
+                continue
+            
+            frame = cv2.flip(frame, 1)
+            annotated_frame = frame
+            
+            if self.tracking_active:
+                result, annotated_frame = self.eye_tracker.process_and_draw_frame(frame)
+                self.last_detection_result = result
+            else:
+                self.last_detection_result = None
+            
+            with self.frame_lock:
+                self.current_frame = annotated_frame
+            
+            time.sleep(0.033)
+        print("Frame reading thread has stopped.")
+
+    def setup_routes(self):
+        @self.app.route('/api/enhanced-eye-tracking/status', methods=['GET'])
+        def status():
+            return jsonify({'status': 'running', 'camera_status': 'active' if self.camera_active else 'inactive', 'tracking_active': self.tracking_active})
+
+        @self.app.route('/api/enhanced-eye-tracking/start_camera', methods=['POST'])
+        def start_camera():
+            if self.camera_active: return jsonify({'success': True, 'message': 'Camera is already active'})
+            
+            # More robust camera opening for different environments
+            self.cap = cv2.VideoCapture(0)
+            if not self.cap.isOpened():
+                self.cap = cv2.VideoCapture(1) # Try next index as a fallback
+            
+            if self.cap and self.cap.isOpened():
+                self.camera_active = True
+                self.frame_thread_active = True
+                self.frame_thread = threading.Thread(target=self._read_frames)
+                self.frame_thread.daemon = True
+                self.frame_thread.start()
+                return jsonify({'success': True, 'message': 'Camera started successfully'})
+            else:
+                print("!!! CRITICAL: Failed to open any camera. Please check hardware and permissions. !!!")
+                return jsonify({'success': False, 'message': 'Failed to open camera. Check connection and permissions.'}), 500
+
+        @self.app.route('/api/enhanced-eye-tracking/stop_camera', methods=['POST'])
+        def stop_camera():
+            if self.camera_active:
+                self.frame_thread_active = False
+                if self.frame_thread: self.frame_thread.join(timeout=1)
+                if self.cap: self.cap.release()
+                self.camera_active = False
+                self.tracking_active = False
+                self.cap = None
+            return jsonify({'success': True, 'message': 'Camera stopped successfully'})
+
+        @self.app.route('/api/enhanced-eye-tracking/start_tracking', methods=['POST'])
+        def start_tracking():
+            if not self.camera_active: return jsonify({'success': False, 'message': 'Camera is not active'}), 400
+            self.tracking_active = True
+            return jsonify({'success': True, 'message': 'Face detection tracking started'})
+
+        @self.app.route('/api/enhanced-eye-tracking/stop_tracking', methods=['POST'])
+        def stop_tracking():
+            self.tracking_active = False
+            return jsonify({'success': True, 'message': 'Face detection tracking stopped'})
+
+        @self.app.route('/api/enhanced-eye-tracking/get_enhanced_gaze', methods=['GET'])
+        def get_enhanced_gaze():
+            if not self.tracking_active or self.last_detection_result is None:
+                return jsonify({'success': True, 'face_detected': False})
+            return jsonify(self.last_detection_result)
+
+        @self.app.route('/api/enhanced-eye-tracking/video_feed')
+        def video_feed():
+            def generate_frames():
+                while self.camera_active:
+                    frame_to_send = None
+                    with self.frame_lock:
+                        if self.current_frame is not None:
+                            frame_to_send = self.current_frame
+                    if frame_to_send is not None:
+                        ret, buffer = cv2.imencode('.jpg', frame_to_send)
+                        if ret:
+                            frame_bytes = buffer.tobytes()
+                            yield (b'--frame\r\n'
+                                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+                    time.sleep(0.033)
+            return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    
+    def run(self, host='0.0.0.0', port=5002, debug=False):
+        print(f"Starting Enhanced Eye Tracking Server on http://{host}:{port}")
+        self.app.run(host=host, port=port, debug=debug, threaded=True, use_reloader=False)
+
+if __name__ == '__main__':
+    server = EnhancedEyeTrackingServer()
+    server.run()
+
+
+
+
+
+
+
+
+
+
+
+
+Tools
+
+2.5 Pro
+
+Gemini can make 

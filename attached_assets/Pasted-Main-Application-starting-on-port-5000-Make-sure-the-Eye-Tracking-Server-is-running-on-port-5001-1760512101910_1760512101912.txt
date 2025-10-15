@@ -1,0 +1,26 @@
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 985-157-497
+172.31.103.226 - - [15/Oct/2025 07:06:21] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 07:06:21] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.103.226 - - [15/Oct/2025 07:06:21] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 07:06:21] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+172.31.103.226 - - [15/Oct/2025 07:06:21] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+127.0.0.1 - - [15/Oct/2025 07:06:22] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+172.31.103.226 - - [15/Oct/2025 07:06:22] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+127.0.0.1 - - [15/Oct/2025 07:06:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+172.31.103.226 - - [15/Oct/2025 07:06:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+127.0.0.1 - - [15/Oct/2025 07:06:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+172.31.103.226 - - [15/Oct/2025 07:06:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+127.0.0.1 - - [15/Oct/2025 07:06:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+172.31.103.226 - - [15/Oct/2025 07:06:23] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+127.0.0.1 - - [15/Oct/2025 07:06:24] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+172.31.103.226 - - [15/Oct/2025 07:06:24] "POST /api/enhanced-eye-tracking/detect_face HTTP/1.1" 404 -
+172.31.103.226 - - [15/Oct/2025 07:06:24] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 07:06:24] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.103.226 - - [15/Oct/2025 07:06:24] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+[ WARN:0@13.094] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video0): can't open camera by index
+[ERROR:0@13.094] global obsensor_uvc_stream_channel.cpp:158 getStreamChannelGroup Camera index out of range
+127.0.0.1 - - [15/Oct/2025 07:06:32] "POST /api/enhanced-eye-tracking/start_camera HTTP/1.1" 500 -
+172.31.103.226 - - [15/Oct/2025 07:06:32] "POST /api/enhanced-eye-tracking/start_camera HTTP/1.1" 500 -
