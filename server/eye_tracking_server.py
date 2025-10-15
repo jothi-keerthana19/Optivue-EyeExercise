@@ -187,6 +187,46 @@ class EyeTrackingServer:
                     'message': str(e)
                 }), 500
         
+        @self.app.route('/api/detect_face', methods=['POST'])
+        def detect_face():
+            """
+            Receive frame from browser and detect face using MediaPipe.
+            """
+            try:
+                if 'frame' not in request.files:
+                    return jsonify({
+                        'success': False,
+                        'face_detected': False,
+                        'message': 'No frame provided'
+                    }), 400
+                
+                # Read image from request
+                file = request.files['frame']
+                npimg = np.frombuffer(file.read(), np.uint8)
+                frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+                
+                if frame is None:
+                    return jsonify({
+                        'success': False,
+                        'face_detected': False,
+                        'message': 'Invalid frame'
+                    }), 400
+                
+                # Process frame for face detection
+                result = self.eye_tracker.process_frame(frame)
+                
+                return jsonify({
+                    'success': True,
+                    'face_detected': result.get('face_detected', False)
+                })
+            
+            except Exception as e:
+                return jsonify({
+                    'success': False,
+                    'face_detected': False,
+                    'message': str(e)
+                }), 500
+        
         @self.app.route('/api/video_feed', methods=['GET'])
         def video_feed():
             """Stream live camera feed."""
