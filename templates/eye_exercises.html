@@ -566,6 +566,14 @@
                     
                     videoElement.srcObject = videoStream;
                     
+                    // Wait for video to be ready before starting frame capture
+                    await new Promise((resolve) => {
+                        videoElement.onloadedmetadata = () => {
+                            videoElement.play();
+                            resolve();
+                        };
+                    });
+                    
                     // Show the camera container with the backend processed feed
                     document.getElementById('camera-container').classList.add('active');
                     
@@ -608,21 +616,37 @@
             frameCaptureInterval = setInterval(async () => {
                 if (!videoElement || !canvasElement || !trackingEnabled) return;
                 
+                // Check if video is ready
+                if (videoElement.readyState !== videoElement.HAVE_ENOUGH_DATA) {
+                    return;
+                }
+                
                 try {
                     const ctx = canvasElement.getContext('2d');
                     ctx.drawImage(videoElement, 0, 0, 640, 480);
                     
                     // Convert canvas to blob and send to backend
                     canvasElement.toBlob(async (blob) => {
-                        if (!blob) return;
+                        if (!blob) {
+                            console.warn('Failed to create blob from canvas');
+                            return;
+                        }
                         
                         const formData = new FormData();
                         formData.append('frame', blob, 'frame.jpg');
                         
-                        await fetch('/api/enhanced-eye-tracking/process_frame', {
-                            method: 'POST',
-                            body: formData
-                        });
+                        try {
+                            const response = await fetch('/api/enhanced-eye-tracking/process_frame', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            
+                            if (!response.ok) {
+                                console.error('Frame processing failed:', response.status);
+                            }
+                        } catch (error) {
+                            console.error('Error sending frame:', error);
+                        }
                     }, 'image/jpeg', 0.8);
                 } catch (error) {
                     console.error('Error capturing frame:', error);
