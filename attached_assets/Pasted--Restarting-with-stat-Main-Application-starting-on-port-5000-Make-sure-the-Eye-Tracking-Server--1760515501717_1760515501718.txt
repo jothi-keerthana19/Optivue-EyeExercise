@@ -1,0 +1,102 @@
+ Restarting with stat
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 509-671-932
+172.31.72.34 - - [15/Oct/2025 08:04:39] "GET / HTTP/1.1" 200 -
+172.31.72.34 - - [15/Oct/2025 08:04:39] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 503 -
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1760515486.698004     210 gl_context_egl.cc:85] Successfully initialized EGL. Major : 1 Minor: 5
+I0000 00:00:1760515486.698012     206 gl_context_egl.cc:85] Successfully initialized EGL. Major : 1 Minor: 5
+I0000 00:00:1760515487.076546     414 gl_context.cc:369] GL version: 3.2 (OpenGL ES 3.2 Mesa 25.0.7), renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+MediaPipe FaceDetection initialized with confidence=0.7, model=1
+I0000 00:00:1760515487.079327     415 gl_context.cc:369] GL version: 3.2 (OpenGL ES 3.2 Mesa 25.0.7), renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+MediaPipe FaceDetection initialized with confidence=0.7
+Eye Tracking Server starting on port 5001...
+ * Serving Flask app 'eye_tracking_server'
+ * Debug mode: off
+Starting Enhanced Eye Tracking Server on http://0.0.0.0:5002
+ * Serving Flask app 'enhanced_eye_tracking_server'
+ * Debug mode: off
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://172.31.72.34:5001
+Press CTRL+C to quit
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.31.72.34:5002
+Press CTRL+C to quit
+W0000 00:00:1760515487.125915     332 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1760515487.130173     341 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:52] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:52] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+127.0.0.1 - - [15/Oct/2025 08:04:52] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.72.34 - - [15/Oct/2025 08:04:52] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:52] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:52] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:52] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:52] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:52] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:52] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+127.0.0.1 - - [15/Oct/2025 08:04:53] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.72.34 - - [15/Oct/2025 08:04:53] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+127.0.0.1 - - [15/Oct/2025 08:04:53] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.72.34 - - [15/Oct/2025 08:04:53] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+127.0.0.1 - - [15/Oct/2025 08:04:54] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.72.34 - - [15/Oct/2025 08:04:54] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+127.0.0.1 - - [15/Oct/2025 08:04:54] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.72.34 - - [15/Oct/2025 08:04:54] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+127.0.0.1 - - [15/Oct/2025 08:04:55] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.72.34 - - [15/Oct/2025 08:04:55] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+172.31.72.34 - - [15/Oct/2025 08:04:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
+127.0.0.1 - - [15/Oct/2025 08:04:55] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.72.34 - - [15/Oct/2025 08:04:55] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+ERROR: No 'frame' in request.files
+127.0.0.1 - - [15/Oct/2025 08:04:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 400 -
