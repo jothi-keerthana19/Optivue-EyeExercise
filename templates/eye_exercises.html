@@ -545,9 +545,10 @@
             if (trackingEnabled) {
                 try {
                     // Request browser webcam access
-                    browserVideoStream = await navigator.mediaDevices.getUserMedia({ 
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
                         video: { width: 640, height: 480 } 
                     });
+                    browserVideoStream = stream;
                     
                     // Create video element for browser webcam (hidden)
                     if (!browserVideoElement) {
@@ -644,45 +645,46 @@
                         // Capture current frame from browser webcam
                         captureContext.drawImage(browserVideoElement, 0, 0, 640, 480);
                         
-                        // Convert canvas to blob
-                        const blob = await new Promise((resolve, reject) => {
-                            captureCanvas.toBlob((b) => {
-                                if (b) resolve(b);
-                                else reject(new Error('Failed to create blob'));
-                            }, 'image/jpeg', 0.95);
-                        });
+                        // Convert canvas to blob with proper error handling
+                        captureCanvas.toBlob(async (blob) => {
+                            if (!blob || blob.size === 0) {
+                                console.error('Failed to create blob from canvas');
+                                drawVideoWithoutBox();
+                                return;
+                            }
+                            
+                            try {
+                                // Send frame to backend for face detection
+                                const formData = new FormData();
+                                formData.append('frame', blob, 'frame.jpg');
+                                
+                                const response = await fetch('/api/enhanced-eye-tracking/detect_face', {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                                
+                                if (!response.ok) {
+                                    const errorText = await response.text();
+                                    console.error('Face detection request failed:', response.status, errorText);
+                                    drawVideoWithoutBox();
+                                    return;
+                                }
+                                
+                                const data = await response.json();
+                                handleFocusData(data);
+                                
+                                // Draw video frame with or without bounding box
+                                if (data.face_detected && data.bbox) {
+                                    drawBoundingBox(data.bbox);
+                                } else {
+                                    drawVideoWithoutBox();
+                                }
+                            } catch (error) {
+                                console.error('Focus polling error:', error);
+                                drawVideoWithoutBox();
+                            }
+                        }, 'image/jpeg', 0.95);
                         
-                        if (!blob || blob.size === 0) {
-                            console.error('Empty blob created');
-                            drawVideoWithoutBox();
-                            return;
-                        }
-                        
-                        // Send frame to backend for face detection
-                        const formData = new FormData();
-                        formData.append('frame', blob, 'frame.jpg');
-                        
-                        const response = await fetch('/api/enhanced-eye-tracking/detect_face', {
-                            method: 'POST',
-                            body: formData
-                        });
-                        
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            console.error('Face detection request failed:', response.status, errorText);
-                            drawVideoWithoutBox();
-                            return;
-                        }
-                        
-                        const data = await response.json();
-                        handleFocusData(data);
-                        
-                        // Draw video frame with or without bounding box
-                        if (data.face_detected && data.bbox) {
-                            drawBoundingBox(data.bbox);
-                        } else {
-                            drawVideoWithoutBox();
-                        }
                     } catch (error) {
                         console.error('Focus polling error:', error);
                         drawVideoWithoutBox();
