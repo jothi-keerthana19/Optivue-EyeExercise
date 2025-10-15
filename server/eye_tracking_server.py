@@ -1,7 +1,8 @@
+
 """
 Eye Tracking API Server
 Background service dedicated to computer vision processing.
-Manages webcam feed and provides face detection API.
+Manages webcam feed and provides face detection API with visual feedback.
 """
 
 from flask import Flask, jsonify, request, Response
@@ -11,7 +12,7 @@ import cv2
 import numpy as np
 import threading
 import time
-from typing import Optional
+from typing import Optional, Dict, Any
 
 
 class EyeTrackingServer:
@@ -20,16 +21,18 @@ class EyeTrackingServer:
     def __init__(self, port: int = 5001):
         """Initialize the eye tracking server."""
         self.app = Flask(__name__)
-        CORS(self.app)
+        CORS(self.app, resources={r"/api/*": {"origins": "*"}})
 
         self.port = port
-        # Use stricter confidence threshold of 0.7 for better accuracy
-        self.eye_tracker = SimplifiedEyeTracker(min_detection_confidence=0.7)
+        # Use stricter confidence threshold of 0.7 and full-range model (1) for better accuracy
+        self.eye_tracker = SimplifiedEyeTracker(model_selection=1, min_detection_confidence=0.7)
         self.cap: Optional[cv2.VideoCapture] = None
         self.camera_active = False
         self.tracking_active = False
         self.current_frame = None
         self.frame_lock = threading.Lock()
+
+        self.last_detection_result: Optional[Dict[str, Any]] = None
 
         self.frame_thread = None
         self.frame_thread_active = False
@@ -151,29 +154,13 @@ class EyeTrackingServer:
             Returns simple JSON with face_detected boolean.
             """
             try:
-                if not self.tracking_active or not self.camera_active:
+                if not self.tracking_active or self.last_detection_result is None:
                     return jsonify({
-                        'success': False,
-                        'face_detected': False,
-                        'message': 'Tracking not active'
+                        'success': True,
+                        'face_detected': False
                     })
 
-                with self.frame_lock:
-                    if self.current_frame is None:
-                        return jsonify({
-                            'success': False,
-                            'face_detected': False,
-                            'message': 'No frame available'
-                        })
-
-                    frame = self.current_frame.copy()
-
-                result = self.eye_tracker.process_frame(frame)
-
-                return jsonify({
-                    'success': result.get('success', False),
-                    'face_detected': result.get('face_detected', False)
-                })
+                return jsonify(self.last_detection_result)
 
             except Exception as e:
                 return jsonify({
@@ -246,42 +233,40 @@ class EyeTrackingServer:
             )
 
     def _read_frames(self):
-        """Background thread to continuously read frames and draw debug info."""
+        """
+        Background thread that continuously reads frames from the camera,
+        processes them using the eye tracker, and updates the shared state.
+        """
+        print("Starting frame reading and processing thread.")
         while self.frame_thread_active and self.camera_active:
-            if self.cap and self.cap.isOpened():
-                ret, frame = self.cap.read()
-                if ret:
-                    frame = cv2.flip(frame, 1)
-
-                    # Process frame to get detection results
-                    result = self.eye_tracker.process_frame(frame)
-
-                    # Draw bounding box on the original frame if face detected
-                    if result.get('face_detected') and result.get('detections'):
-                        for detection in result['detections']:
-                            bboxC = detection.location_data.relative_bounding_box
-                            ih, iw, _ = frame.shape
-                            x = int(bboxC.xmin * iw)
-                            y = int(bboxC.ymin * ih)
-                            w = int(bboxC.width * iw)
-                            h = int(bboxC.height * ih)
-
-                            # Draw green box around detected face
-                            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-                            # Show confidence score
-                            confidence = detection.score[0] if detection.score else 0
-                            cv2.putText(frame, f"Confidence: {confidence:.2f}", (x, y - 10),
-                                      cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                    else:
-                        # Indicate no face detected
-                        cv2.putText(frame, "No Face Detected", (20, 40),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-
-                    with self.frame_lock:
-                        self.current_frame = frame
-
-            time.sleep(0.01)
+            if not (self.cap and self.cap.isOpened()):
+                time.sleep(0.1)
+                continue
+            
+            ret, frame = self.cap.read()
+            if not ret or frame is None:
+                time.sleep(0.1)
+                continue
+            
+            # Flip for a natural, mirror-like view
+            frame = cv2.flip(frame, 1)
+            
+            annotated_frame = frame
+            
+            if self.tracking_active:
+                # This single, efficient call gets both data and the visualized frame
+                result, annotated_frame = self.eye_tracker.process_and_draw_frame(frame)
+                self.last_detection_result = result
+            else:
+                # Clear old data if tracking is turned off
+                self.last_detection_result = None
+            
+            # Safely update the frame that will be streamed to the frontend
+            with self.frame_lock:
+                self.current_frame = annotated_frame
+            
+            time.sleep(0.033)  # Maintain a steady ~30 FPS
+        print("Frame reading thread has stopped.")
 
     def run(self):
         """Start the Flask server."""
