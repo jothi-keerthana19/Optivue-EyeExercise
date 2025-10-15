@@ -1,0 +1,47 @@
+Press CTRL+C to quit
+172.31.84.34 - - [15/Oct/2025 07:31:10] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 07:31:11] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.84.34 - - [15/Oct/2025 07:31:11] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.84.34 - - [15/Oct/2025 07:31:14] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 07:31:14] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.84.34 - - [15/Oct/2025 07:31:14] "GET /api/enhanced-eye-tracking/video_feed HTTP/1.1" 200 -
+172.31.84.34 - - [15/Oct/2025 07:31:14] "GET /favicon.ico HTTP/1.1" 404 -
+Trying camera index 0 with V4L2 backend...
+[ WARN:0@100.403] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video0): can't open camera by index
+[ WARN:0@100.403] global cap.cpp:478 open VIDEOIO(V4L2): backend is generally available but can't be used to capture by index
+  Failed to open camera 0 with V4L2
+Trying camera index 1 with V4L2 backend...
+[ WARN:0@100.403] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video1): can't open camera by index
+[ WARN:0@100.403] global cap.cpp:478 open VIDEOIO(V4L2): backend is generally available but can't be used to capture by index
+  Failed to open camera 1 with V4L2
+Trying camera index 2 with V4L2 backend...
+[ WARN:0@100.403] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video2): can't open camera by index
+[ WARN:0@100.403] global cap.cpp:478 open VIDEOIO(V4L2): backend is generally available but can't be used to capture by index
+  Failed to open camera 2 with V4L2
+Trying camera index 0 with ANY backend...
+[ WARN:0@100.404] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video0): can't open camera by index
+[ERROR:0@100.404] global obsensor_uvc_stream_channel.cpp:158 getStreamChannelGroup Camera index out of range
+  Failed to open camera 0 with ANY
+Trying camera index 1 with ANY backend...
+[ WARN:0@100.404] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video1): can't open camera by index
+[ERROR:0@100.404] global obsensor_uvc_stream_channel.cpp:158 getStreamChannelGroup Camera index out of range
+  Failed to open camera 1 with ANY
+Trying camera index 2 with ANY backend...
+[ WARN:0@100.404] global cap_v4l.cpp:913 open VIDEOIO(V4L2:/dev/video2): can't open camera by index
+[ERROR:0@100.404] global obsensor_uvc_stream_channel.cpp:158 getStreamChannelGroup Camera index out of range
+  Failed to open camera 2 with ANY
+Trying camera index 0 with DSHOW backend...
+  Failed to open camera 0 with DSHOW
+Trying camera index 1 with DSHOW backend...
+  Failed to open camera 1 with DSHOW
+Trying camera index 2 with DSHOW backend...
+  Failed to open camera 2 with DSHOW
+Trying camera index 0 with AVFoundation backend...
+  Failed to open camera 0 with AVFoundation
+Trying camera index 1 with AVFoundation backend...
+  Failed to open camera 1 with AVFoundation
+Trying camera index 2 with AVFoundation backend...
+  Failed to open camera 2 with AVFoundation
+ERROR: No camera detected. Please ensure your webcam is connected and has the necessary permissions.
+127.0.0.1 - - [15/Oct/2025 07:31:27] "POST /api/enhanced-eye-tracking/start_camera HTTP/1.1" 500 -
+172.31.84.34 - - [15/Oct/2025 07:31:27] "POST /api/enhanced-eye-tracking/start_camera HTTP/1.1" 500 -
