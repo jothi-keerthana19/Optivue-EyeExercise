@@ -22,12 +22,13 @@ class SimplifiedEyeTracker:
     Uses MediaPipe Face Detection for robust detection.
     """
     
-    def __init__(self, min_detection_confidence: float = 0.6) -> None:
+    def __init__(self, min_detection_confidence: float = 0.7) -> None:
         """
         Initialize the face detector with confidence threshold.
         
         Args:
             min_detection_confidence: Minimum confidence (0.0-1.0) for valid detection
+                                     Higher values (0.7) make detection stricter and more accurate
         """
         self.face_detection = None
         self.min_detection_confidence = min_detection_confidence
@@ -40,7 +41,7 @@ class SimplifiedEyeTracker:
             return
         
         try:
-            # Initialize Face Detection (not Face Mesh for better performance)
+            # Initialize Face Detection with stricter confidence
             self.mp_face_detection = mp.solutions.face_detection
             self.face_detection = self.mp_face_detection.FaceDetection(
                 min_detection_confidence=self.min_detection_confidence,
