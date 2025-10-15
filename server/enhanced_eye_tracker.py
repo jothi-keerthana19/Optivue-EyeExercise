@@ -64,8 +64,12 @@ class EnhancedEyeTracker:
                     [frame_width, frame_height, frame_width, frame_height]
                 ).astype(int)
                 
+                # Convert to top-left and bottom-right coordinates for cv2.rectangle
+                top_left = (face_rect[0], face_rect[1])
+                bottom_right = (face_rect[0] + face_rect[2], face_rect[1] + face_rect[3])
+                
                 # Draw a white rectangle around the face
-                cv2.rectangle(annotated_frame, face_rect, color=(255, 255, 255), thickness=2)
+                cv2.rectangle(annotated_frame, top_left, bottom_right, color=(255, 255, 255), thickness=2)
 
                 # --- 2. Draw the Confidence Score ---
                 confidence_score = detection.score[0]
