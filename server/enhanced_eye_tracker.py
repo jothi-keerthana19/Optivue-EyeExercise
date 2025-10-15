@@ -25,13 +25,16 @@ class EnhancedEyeTracker:
 
         self.model_selection = model_selection
         self.min_detection_confidence = min_detection_confidence
+        
+        # Initialize face_detection to None first
+        self.face_detection = None
 
         self._initialize_model()
         print(f"MediaPipe FaceDetection initialized with confidence={min_detection_confidence}")
 
     def _initialize_model(self) -> None:
         """Initializes or reinitializes the MediaPipe FaceDetection model."""
-        if self.face_detection:
+        if self.face_detection is not None:
             self.face_detection.close()
         
         # Initialize the FaceDetection model with the specified confidence
