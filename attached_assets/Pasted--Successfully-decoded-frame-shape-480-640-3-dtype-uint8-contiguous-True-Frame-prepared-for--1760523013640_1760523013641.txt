@@ -1,0 +1,150 @@
+
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=139.96561414930557
+127.0.0.1 - - [15/Oct/2025 10:09:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:53] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:09:54] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:54] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=141.4565993923611
+127.0.0.1 - - [15/Oct/2025 10:09:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:09:55] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:55] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=141.2428266059028
+127.0.0.1 - - [15/Oct/2025 10:09:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:55] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:09:56] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:56] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=140.94116970486112
+127.0.0.1 - - [15/Oct/2025 10:09:56] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:56] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=140.88776692708333
+127.0.0.1 - - [15/Oct/2025 10:09:57] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:57] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:09:58] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:58] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:09:58] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:58] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=141.09058376736112
+127.0.0.1 - - [15/Oct/2025 10:09:58] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:58] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:09:59] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:09:59] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=140.76172960069445
+127.0.0.1 - - [15/Oct/2025 10:10:00] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:00] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:00] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:00] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=140.74496419270832
+127.0.0.1 - - [15/Oct/2025 10:10:00] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:00] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:01] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:01] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=140.96954752604168
+127.0.0.1 - - [15/Oct/2025 10:10:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:02] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:02] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=140.32665147569443
+127.0.0.1 - - [15/Oct/2025 10:10:02] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:02] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:03] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:03] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=140.3883474392361
+127.0.0.1 - - [15/Oct/2025 10:10:04] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:04] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:04] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:04] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:05] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:05] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=140.89987955729165
+127.0.0.1 - - [15/Oct/2025 10:10:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=139.151787109375
+127.0.0.1 - - [15/Oct/2025 10:10:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:05] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:06] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:06] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=135.9343044704861
+127.0.0.1 - - [15/Oct/2025 10:10:06] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:06] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:07] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:07] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+MediaPipe processing error: Graph has errors: 
+Packet type mismatch on a calculator receiving from stream "image": ; Empty packets are not allowed for type: OneOf<::mediapipe::Image, ::mediapipe::ImageFrame, mediapipe::GpuBuffer>
+Frame info - shape: (480, 640, 3), dtype: uint8, contiguous: True, writable: True
+Frame data range: min=0, max=255, mean=139.48284939236112
+127.0.0.1 - - [15/Oct/2025 10:10:07] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.66.2 - - [15/Oct/2025 10:10:07] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [15/Oct/2025 10:10:08] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
