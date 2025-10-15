@@ -572,19 +572,27 @@
                     // Wait for video to be FULLY ready with actual pixel data
                     await new Promise((resolve) => {
                         let framesChecked = 0;
-                        const maxFrameChecks = 30; // Wait up to 3 seconds
+                        const maxFrameChecks = 50; // Wait up to 5 seconds
 
                         const checkForActualFrames = () => {
-                            if (!canvasElement) return;
+                            if (!canvasElement || !videoElement) return;
 
                             const ctx = canvasElement.getContext('2d');
                             ctx.drawImage(videoElement, 0, 0, 640, 480);
 
-                            // Check if we have actual pixel data (not just black)
-                            const imageData = ctx.getImageData(320, 240, 1, 1); // Check center pixel
-                            const pixelSum = imageData.data[0] + imageData.data[1] + imageData.data[2];
+                            // Check multiple pixels to ensure we have real video data
+                            const imageData = ctx.getImageData(0, 0, 640, 480);
+                            let nonZeroPixels = 0;
+                            
+                            // Sample every 100th pixel
+                            for (let i = 0; i < imageData.data.length; i += 400) {
+                                if (imageData.data[i] > 0 || imageData.data[i+1] > 0 || imageData.data[i+2] > 0) {
+                                    nonZeroPixels++;
+                                }
+                            }
 
-                            if (pixelSum > 0) {
+                            // Need at least 10% of sampled pixels to be non-black
+                            if (nonZeroPixels > (imageData.data.length / 4000)) {
                                 // We have actual video data!
                                 console.log('Video element has actual frame data');
                                 resolve();
@@ -601,8 +609,8 @@
 
                         videoElement.onloadedmetadata = () => {
                             videoElement.play().then(() => {
-                                // Wait a bit for frames to start flowing
-                                setTimeout(checkForActualFrames, 300);
+                                // Wait longer for frames to stabilize
+                                setTimeout(checkForActualFrames, 500);
                             });
                         };
                     });
@@ -642,68 +650,76 @@
         }
 
         let frameCaptureInterval = null;
+        let framesSent = 0;
 
         function startFrameCapture() {
             if (frameCaptureInterval) return;
 
-            frameCaptureInterval = setInterval(async () => {
-                if (!videoElement || !canvasElement || !trackingEnabled) return;
+            // Wait 1 second before starting to send frames
+            setTimeout(() => {
+                frameCaptureInterval = setInterval(async () => {
+                    if (!videoElement || !canvasElement || !trackingEnabled) return;
 
-                // Double-check video is ready with actual frame data
-                if (videoElement.readyState < 3) {
-                    console.log('Video not ready yet, skipping frame');
-                    return;
-                }
-
-                try {
-                    const ctx = canvasElement.getContext('2d', { willReadFrequently: true });
-
-                    // Draw current video frame to canvas
-                    ctx.drawImage(videoElement, 0, 0, 640, 480);
-
-                    // Check if we actually drew something (not just black)
-                    // Sample a few pixels to be more robust
-                    let totalPixelValue = 0;
-                    for (let i = 0; i < 5; i++) {
-                        const x = Math.floor(Math.random() * 640);
-                        const y = Math.floor(Math.random() * 480);
-                        const imageData = ctx.getImageData(x, y, 1, 1);
-                        totalPixelValue += imageData.data[0] + imageData.data[1] + imageData.data[2];
-                    }
-
-                    if (totalPixelValue === 0) {
-                        console.log('Canvas appears to be black, skipping frame');
+                    // Double-check video is ready with actual frame data
+                    if (videoElement.readyState < 3) {
+                        console.log('Video not ready yet, skipping frame');
                         return;
                     }
 
-                    // Convert canvas to blob and send to backend
-                    canvasElement.toBlob(async (blob) => {
-                        if (!blob || blob.size === 0) {
-                            console.warn('Invalid blob created from canvas');
+                    try {
+                        const ctx = canvasElement.getContext('2d', { willReadFrequently: true });
+
+                        // Draw current video frame to canvas
+                        ctx.drawImage(videoElement, 0, 0, 640, 480);
+
+                        // More thorough validation - check multiple pixels
+                        let totalPixelValue = 0;
+                        let validPixels = 0;
+                        
+                        for (let i = 0; i < 10; i++) {
+                            const x = Math.floor(Math.random() * 640);
+                            const y = Math.floor(Math.random() * 480);
+                            const imageData = ctx.getImageData(x, y, 1, 1);
+                            const pixelSum = imageData.data[0] + imageData.data[1] + imageData.data[2];
+                            totalPixelValue += pixelSum;
+                            if (pixelSum > 0) validPixels++;
+                        }
+
+                        // Need at least 50% of sampled pixels to be non-black
+                        if (validPixels < 5) {
+                            console.log('Canvas appears to be black, skipping frame');
                             return;
                         }
 
-                        const formData = new FormData();
-                        formData.append('frame', blob, 'frame.jpg');
-
-                        try {
-                            const response = await fetch('/api/enhanced-eye-tracking/process_frame', {
-                                method: 'POST',
-                                body: formData
-                            });
-
-                            if (!response.ok) {
-                                const errorText = await response.text();
-                                console.error('Frame processing failed:', response.status, errorText);
+                        // Convert canvas to blob and send to backend
+                        canvasElement.toBlob(async (blob) => {
+                            if (!blob || blob.size === 0 || blob.size < 1000) {
+                                console.warn('Invalid blob created from canvas');
+                                return;
                             }
-                        } catch (error) {
-                            console.error('Error sending frame:', error);
-                        }
-                    }, 'image/jpeg', 0.9);
-                } catch (error) {
-                    console.error('Error capturing frame:', error);
-                }
-            }, 300); // Send frames every 300ms for better stability
+
+                            const formData = new FormData();
+                            formData.append('frame', blob, 'frame.jpg');
+
+                            try {
+                                const response = await fetch('/api/enhanced-eye-tracking/process_frame', {
+                                    method: 'POST',
+                                    body: formData
+                                });
+
+                                if (!response.ok) {
+                                    const errorText = await response.text();
+                                    console.error('Frame processing failed:', response.status, errorText);
+                                }
+                            } catch (error) {
+                                console.error('Error sending frame:', error);
+                            }
+                        }, 'image/jpeg', 0.95);
+                    } catch (error) {
+                        console.error('Error capturing frame:', error);
+                    }
+                }, 500); // Send frames every 500ms for better stability
+            }, 1000); // Wait 1 second before starting
         }
 
         function stopFrameCapture() {
