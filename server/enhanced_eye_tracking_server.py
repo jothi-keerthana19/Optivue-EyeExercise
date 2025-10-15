@@ -36,16 +36,30 @@ class EnhancedEyeTrackingServer:
         This is highly efficient as processing happens only once per frame.
         """
         print("Starting frame reading and processing thread.")
+        failed_reads = 0
+        max_failed_reads = 10
+        
         while self.frame_thread_active and self.camera_active:
             if not (self.cap and self.cap.isOpened()):
+                print("Camera not opened, waiting...")
                 time.sleep(0.1)
                 continue
             
             ret, frame = self.cap.read()
             if not ret or frame is None:
-                print("Failed to capture a frame from the camera.")
+                failed_reads += 1
+                print(f"Failed to capture frame ({failed_reads}/{max_failed_reads})")
+                
+                if failed_reads >= max_failed_reads:
+                    print("Too many failed reads, stopping camera...")
+                    self.camera_active = False
+                    break
+                    
                 time.sleep(0.1)
                 continue
+            
+            # Reset failed reads counter on successful read
+            failed_reads = 0
             
             # Flip for a natural, mirror-like view
             frame = cv2.flip(frame, 1)
@@ -85,16 +99,36 @@ class EnhancedEyeTrackingServer:
             if self.camera_active:
                 return jsonify({'success': True, 'message': 'Camera is already active'})
             
-            self.cap = cv2.VideoCapture(0) # Use camera index 0
-            if self.cap and self.cap.isOpened():
-                self.camera_active = True
-                self.frame_thread_active = True
-                self.frame_thread = threading.Thread(target=self._read_frames)
-                self.frame_thread.daemon = True
-                self.frame_thread.start()
-                return jsonify({'success': True, 'message': 'Camera started successfully'})
-            else:
-                return jsonify({'success': False, 'message': 'Failed to open camera'}), 500
+            # Try multiple camera indices for better compatibility
+            camera_indices = [0, 1, 2]
+            for idx in camera_indices:
+                print(f"Trying camera index {idx}...")
+                self.cap = cv2.VideoCapture(idx)
+                if self.cap and self.cap.isOpened():
+                    # Verify we can actually read a frame
+                    ret, test_frame = self.cap.read()
+                    if ret and test_frame is not None:
+                        print(f"Camera {idx} opened successfully")
+                        self.camera_active = True
+                        self.frame_thread_active = True
+                        self.frame_thread = threading.Thread(target=self._read_frames)
+                        self.frame_thread.daemon = True
+                        self.frame_thread.start()
+                        return jsonify({'success': True, 'message': f'Camera started successfully on index {idx}'})
+                    else:
+                        self.cap.release()
+                        print(f"Camera {idx} opened but couldn't read frames")
+                else:
+                    if self.cap:
+                        self.cap.release()
+                    print(f"Failed to open camera {idx}")
+            
+            # No camera worked
+            print("ERROR: No camera available. This may be a Replit environment without camera access.")
+            return jsonify({
+                'success': False, 
+                'message': 'No camera detected. Camera hardware may not be available in this environment.'
+            }), 500
 
         @self.app.route('/api/enhanced-eye-tracking/stop_camera', methods=['POST'])
         def stop_camera():

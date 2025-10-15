@@ -437,9 +437,6 @@
         let pollingInterval = null;
         let exerciseInterval = null;
         let timerInterval = null;
-        let videoStream = null;
-        let canvas = null;
-        let ctx = null;
 
         // Metrics
         let focusTime = 0;
@@ -569,7 +566,14 @@
                     console.error('Error starting camera:', error);
                     toggle.checked = false;
                     trackingEnabled = false;
-                    showNotification('Failed to start camera: ' + error.message, 'danger');
+                    
+                    // Check if it's a camera hardware issue
+                    const errorMsg = error.message || 'Unknown error';
+                    if (errorMsg.includes('camera') || errorMsg.includes('Camera')) {
+                        showNotification('Camera not available. This environment may not have camera access.', 'danger');
+                    } else {
+                        showNotification('Failed to start camera: ' + errorMsg, 'danger');
+                    }
                 }
             } else {
                 // Stop tracking and camera
