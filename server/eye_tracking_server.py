@@ -194,6 +194,7 @@ class EyeTrackingServer:
             """
             try:
                 if 'frame' not in request.files:
+                    print("No frame in request.files")
                     return jsonify({
                         'success': False,
                         'face_detected': False,
@@ -202,10 +203,21 @@ class EyeTrackingServer:
                 
                 # Read image from request
                 file = request.files['frame']
-                npimg = np.frombuffer(file.read(), np.uint8)
+                file_bytes = file.read()
+                
+                if len(file_bytes) == 0:
+                    print("Empty file received")
+                    return jsonify({
+                        'success': False,
+                        'face_detected': False,
+                        'message': 'Empty frame'
+                    }), 400
+                
+                npimg = np.frombuffer(file_bytes, np.uint8)
                 frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
                 
                 if frame is None:
+                    print("Failed to decode frame")
                     return jsonify({
                         'success': False,
                         'face_detected': False,
@@ -215,12 +227,17 @@ class EyeTrackingServer:
                 # Process frame for face detection
                 result = self.eye_tracker.process_frame(frame)
                 
+                print(f"Face detection result: {result.get('face_detected', False)}")
+                
                 return jsonify({
                     'success': True,
                     'face_detected': result.get('face_detected', False)
                 })
             
             except Exception as e:
+                print(f"Error in detect_face: {e}")
+                import traceback
+                traceback.print_exc()
                 return jsonify({
                     'success': False,
                     'face_detected': False,

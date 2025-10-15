@@ -588,30 +588,47 @@
                     try {
                         const videoElement = document.getElementById('video');
                         
+                        // Make sure video is ready
+                        if (videoElement.readyState !== videoElement.HAVE_ENOUGH_DATA) {
+                            return;
+                        }
+                        
                         // Draw current video frame to canvas
                         ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
                         
-                        // Convert canvas to blob
+                        // Convert canvas to blob and send immediately
                         canvas.toBlob(async (blob) => {
-                            if (!blob) return;
+                            if (!blob) {
+                                console.error('Failed to create blob from canvas');
+                                return;
+                            }
                             
-                            const formData = new FormData();
-                            formData.append('frame', blob, 'frame.jpg');
-                            
-                            // Send frame to backend for face detection
-                            const response = await fetch('/api/detect_face', {
-                                method: 'POST',
-                                body: formData
-                            });
-                            
-                            const data = await response.json();
-                            handleFocusData(data);
-                        }, 'image/jpeg', 0.8);
+                            try {
+                                const formData = new FormData();
+                                formData.append('frame', blob, 'frame.jpg');
+                                
+                                // Send frame to backend for face detection
+                                const response = await fetch('http://127.0.0.1:5001/api/detect_face', {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                                
+                                if (!response.ok) {
+                                    console.error('Face detection request failed:', response.status);
+                                    return;
+                                }
+                                
+                                const data = await response.json();
+                                handleFocusData(data);
+                            } catch (error) {
+                                console.error('Face detection error:', error);
+                            }
+                        }, 'image/jpeg', 0.9);
                     } catch (error) {
                         console.error('Polling error:', error);
                     }
                 }
-            }, 300);
+            }, 500);
         }
 
         function stopFocusPolling() {
@@ -621,12 +638,16 @@
             }
         }
 
+        let consecutiveFailures = 0;
+        const MAX_CONSECUTIVE_FAILURES = 3;
+
         function handleFocusData(data) {
             const faceDetected = data.face_detected;
             const statusBadge = document.getElementById('focus-status-badge');
             const statusText = document.getElementById('focus-status-text');
 
             if (faceDetected) {
+                consecutiveFailures = 0;
                 focusTime++;
                 currentFocusStreak++;
                 
@@ -639,17 +660,21 @@
                 hideNotification();
                 wasFocused = true;
             } else {
-                if (wasFocused) {
-                    distractions++;
-                    currentFocusStreak = 0;
-                    wasFocused = false;
-                }
-
-                showNotification('Face not detected. Please look at the camera.');
-                pauseExercise();
+                consecutiveFailures++;
                 
-                statusBadge.className = 'not-focused';
-                statusText.textContent = 'Face Lost';
+                // Only pause if face is lost for multiple consecutive checks
+                if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+                    if (wasFocused) {
+                        distractions++;
+                        currentFocusStreak = 0;
+                        wasFocused = false;
+                    }
+
+                    showNotification('Face not detected. Please look at the camera.');
+                    
+                    statusBadge.className = 'not-focused';
+                    statusText.textContent = 'Face Lost';
+                }
             }
         }
 

@@ -34,12 +34,12 @@ class SimplifiedEyeTracker:
             return
         
         try:
-            # Initialize with basic settings - only used for face detection
+            # Initialize with optimized settings for face detection
             self.face_mesh = mp.solutions.face_mesh.FaceMesh(
                 max_num_faces=1,
-                refine_landmarks=False,  # Don't need refined landmarks
-                min_detection_confidence=0.5,
-                min_tracking_confidence=0.5
+                refine_landmarks=False,
+                min_detection_confidence=0.3,  # Lower threshold for better detection
+                min_tracking_confidence=0.3
             )
         except Exception as e:
             self.face_mesh = None
