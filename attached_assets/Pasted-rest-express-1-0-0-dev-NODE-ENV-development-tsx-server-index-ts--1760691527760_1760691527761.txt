@@ -1,0 +1,215 @@
+rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+============================================================
+Eye Exercise Tracker - Launching Python Servers
+============================================================
+Starting Eye Tracking Server on port 5001...
+Starting Enhanced Eye Tracking Server on port 5002...
+Starting Main Application on port 5000...
+============================================================
+Application started!
+Eye Tracking Server: http://localhost:5001
+Enhanced Eye Tracking Server: http://localhost:5002
+Main Application: http://localhost:5000
+============================================================
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Serving Flask app 'main_app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.31.103.66:5000
+Press CTRL+C to quit
+ * Restarting with stat
+Main Application starting on port 5000...
+Make sure the Eye Tracking Server is running on port 5001
+ * Debugger is active!
+ * Debugger PIN: 142-131-525
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1760691335.812789      82 gl_context_egl.cc:85] Successfully initialized EGL. Major : 1 Minor: 5
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1760691335.813830      87 gl_context_egl.cc:85] Successfully initialized EGL. Major : 1 Minor: 5
+I0000 00:00:1760691335.834371     283 gl_context.cc:369] GL version: 3.2 (OpenGL ES 3.2 Mesa 25.0.7), renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+MediaPipe FaceDetection initialized with confidence=0.7
+Starting Enhanced Eye Tracking Server on http://0.0.0.0:5002
+ * Serving Flask app 'enhanced_eye_tracking_server'
+ * Debug mode: off
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://172.31.103.66:5002
+Press CTRL+C to quit
+I0000 00:00:1760691335.869966     284 gl_context.cc:369] GL version: 3.2 (OpenGL ES 3.2 Mesa 25.0.7), renderer: llvmpipe (LLVM 19.1.7, 256 bits)
+MediaPipe FaceDetection initialized with confidence=0.7, model=1
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1760691335.872448     221 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+Eye Tracking Server starting on port 5001...
+ * Serving Flask app 'eye_tracking_server'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://172.31.103.66:5001
+Press CTRL+C to quit
+W0000 00:00:1760691335.929699     215 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+172.31.103.66 - - [17/Oct/2025 08:55:59] "GET / HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:56:00] "GET / HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:56:04] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [17/Oct/2025 08:57:29] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:29] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:31] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:31] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:32] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [17/Oct/2025 08:57:32] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:32] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:32] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:34] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:34] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:34] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:34] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:34] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:34] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:42] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:42] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:48] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:48] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:49] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:49] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:49] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:49] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:51] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:51] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:51] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:51] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:54] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:57] "GET / HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:57:57] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:57:57] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:01] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:02] "GET / HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:05] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [17/Oct/2025 08:58:09] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:09] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [17/Oct/2025 08:58:10] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:10] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+127.0.0.1 - - [17/Oct/2025 08:58:10] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:10] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:12] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:12] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:14] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:14] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [17/Oct/2025 08:58:14] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:14] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:18] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:18] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:18] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:18] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:18] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:18] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:19] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:19] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:19] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:19] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:21] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:21] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:22] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:22] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:22] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:22] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:22] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:22] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+127.0.0.1 - - [17/Oct/2025 08:58:23] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:23] "GET /api/enhanced-eye-tracking/get_enhanced_gaze HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:24] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:24] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:24] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:24] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:24] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:24] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:24] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:24] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:28] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:28] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:28] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:28] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:28] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:28] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+Successfully decoded frame: shape=(480, 640, 3), dtype=uint8, contiguous=True
+Frame prepared for processing: writable=True, contiguous=True
+127.0.0.1 - - [17/Oct/2025 08:58:35] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -
+172.31.103.66 - - [17/Oct/2025 08:58:35] "POST /api/enhanced-eye-tracking/process_frame HTTP/1.1" 200 -

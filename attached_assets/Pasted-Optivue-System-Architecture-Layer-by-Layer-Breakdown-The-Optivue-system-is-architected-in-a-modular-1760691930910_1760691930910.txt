@@ -1,0 +1,95 @@
+Optivue System Architecture: Layer-by-Layer Breakdown
+The Optivue system is architected in a modular, three-tiered structure: Frontend, Backend, and Database. This design ensures clear separation of concerns, scalability, and maintainability, allowing for efficient processing of real-time data and a responsive user experience.
+
+1. Frontend Layer
+The Frontend Layer is the user-facing component of Optivue, responsible for all interactions, visual presentation, and real-time data capture. It is built as a responsive web application to ensure accessibility across various devices.
+
+Interactive Controls & Analytics Display (Green Box):
+
+Purpose: This module handles all interactive elements the user engages with, such as starting/stopping tracking sessions, initiating eye exercises, navigating the dashboard, and viewing customized reports. It dynamically renders various data visualizations (charts, graphs) to present eye health analytics in an understandable format.
+
+Implementation: Developed using vanilla JavaScript for interactivity and client-side logic, integrating libraries like Chart.js for data visualization. This module communicates with the backend APIs to fetch and display processed data, and also with the Real-time Eye & Face Tracking module for live metrics.
+
+Responsive Styling & Layout (Blue Box):
+
+Purpose: Ensures that the Optivue application's user interface is visually appealing, consistent, and adapts seamlessly to different screen sizes and devices (desktops, tablets, mobile phones). It defines the overall aesthetic and user experience.
+
+Implementation: Primarily relies on HTML5 for structure and Bootstrap 5 for its responsive grid system and pre-defined UI components. Custom CSS is used to apply Optivue's specific branding, color palettes, and typography.
+
+Real-time Eye & Face Tracking MediaPipe (Purple Box):
+
+Purpose: This is the client-side computer vision engine that captures and processes live video from the user's webcam. It is central to the Live Tracking feature, performing on-device detection of facial landmarks and eye states.
+
+Implementation: Utilizes JavaScript to access the webcam via browser APIs and integrates Google's MediaPipe Face Mesh library. This module calculates metrics like the Eye Aspect Ratio (EAR) for blink detection and drowsiness estimation. It transmits these "Real-time Metrics" to the Backend for storage and further analysis.
+
+User Interface Rendering (HTML, CSS, JS) (Orange Box):
+
+Purpose: Responsible for generating and updating the actual web pages that the user sees. It combines the structured content, styling, and interactive elements into a cohesive view.
+
+Implementation: Frontend templates are often rendered by the Flask backend using Jinja2, which then loads associated HTML, CSS, and JavaScript files. This module orchestrates how data received from the backend is displayed and how user actions are translated into requests.
+
+2. Backend Layer
+The Backend Layer serves as the central processing hub of Optivue, managing application logic, data handling, and communication between the Frontend and the Database. It's built on a microservice-oriented approach, allowing for specialized tasks.
+
+Configuration & Environment Management (Blue Box):
+
+Purpose: Manages application settings, environment variables (e.g., database connection strings, API keys), and ensures the system operates correctly across different deployment environments (development, staging, production).
+
+Implementation: Handled by standard Flask configurations and potentially external configuration files (e.g., .env files) loaded during application startup.
+
+Real-time Eye Tracking Data Processing (Teal Box):
+
+Purpose: Acts as a dedicated microservice (e.g., enhanced_eye_tracking_server.py) for computationally intensive computer vision tasks, particularly for the Eye Exercises module. It receives raw image frames from the frontend, processes them, and returns specific analytical results.
+
+Implementation: A separate Flask application running on a distinct port. It uses Python with libraries like MediaPipe Face Detection to identify faces, verify focus, or perform other specific vision tasks not handled client-side.
+
+Request Handling & API Services (Flask) (Red Box):
+
+Purpose: This is the main Flask application (app.py) that handles all incoming HTTP requests from the Frontend. It defines the API endpoints, routes requests to appropriate processing modules, and sends responses back to the user.
+
+Implementation: Built using the Flask framework in Python. It manages routing (e.g., /home, /reports, /api/store-live-metrics, /api/eye-exercise-frame-proxy), validates requests, and orchestrates the overall application flow.
+
+User Authentication & Session Management (Pink Box):
+
+Purpose: Secures user accounts, manages login/logout processes, and maintains user sessions. It ensures that only authenticated users can access personalized data and features.
+
+Implementation: Implemented within the main Flask application using modules like Flask-Login for user management and secure session handling. It interacts with the User Profile Database.
+
+Analytics Processing & Data Management (Yellow Box):
+
+Purpose: The core intelligence layer for data aggregation, analysis, and preparation. It processes raw eye tracking data, transforms it into meaningful metrics (e.g., daily/weekly summaries, eye strain scores), and retrieves information for reports. It also manages the flow of data to and from the various database components.
+
+Implementation: Primarily Python code within the Flask backend (e.g., real_data_collector.py). It contains the business logic for calculating health insights, generating AI-driven recommendations, and performing complex database queries. It acts as an intermediary for all data interactions with the database layer.
+
+3. Database Layer
+The Database Layer is responsible for the persistent storage and retrieval of all Optivue's operational and analytical data. It ensures data integrity, security, and efficient access.
+
+User Profile Data (PostgreSQL) (Green Cylinder):
+
+Purpose: Stores all user-specific information, including credentials (hashed passwords), user preferences, and demographic data.
+
+Implementation: A PostgreSQL database, chosen for its robustness, scalability, and advanced features suitable for critical user data.
+
+Eye Tracking Records (Blue Cylinder):
+
+Purpose: Stores the granular, raw or semi-processed eye tracking data collected during live monitoring sessions (e.g., blink events, EAR values, timestamps). This forms the basis for all long-term analytics.
+
+Implementation: Likely within the PostgreSQL database or a specialized time-series-optimized database, depending on volume and performance requirements.
+
+Session Logs (Orange Cylinder):
+
+Purpose: Records details about user sessions, such as start/end times, session duration, and unique session IDs. This helps in correlating eye tracking data to specific user activities.
+
+Implementation: Stored within the PostgreSQL database.
+
+Exercise Performance History (Purple Cylinder):
+
+Purpose: Stores detailed records of user performance during eye exercise sessions, including focus time, distractions, longest focus streaks, and completion times.
+
+Implementation: Stored within the PostgreSQL database.
+
+Notification Records (Red Cylinder):
+
+Purpose: Stores logs of system-generated notifications or alerts sent to users (e.g., "take a break" prompts, fatigue warnings), along with their timestamps and status.
+
+Implementation: Stored within the PostgreSQL database.
