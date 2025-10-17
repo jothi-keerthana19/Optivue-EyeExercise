@@ -217,6 +217,18 @@
         #focus-status-badge.not-focused {
             background-color: rgba(231, 111, 81, 0.9);
             color: white;
+            animation: pulse-alert 1s infinite;
+        }
+
+        @keyframes pulse-alert {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(231, 111, 81, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px 10px rgba(231, 111, 81, 0);
+            }
         }
     </style>
 </head>
@@ -314,6 +326,15 @@
                             <label class="form-check-label" for="trackingToggle">
                                 <i class="bi bi-camera-video me-1"></i>Enable Focus Tracking
                             </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <button id="voice-toggle-btn" class="btn btn-primary w-100" onclick="toggleVoiceNotifications()">
+                                <i class="bi bi-volume-up-fill me-2"></i>Voice Notifications Enabled
+                            </button>
+                            <small class="text-muted d-block mt-1">
+                                <i class="bi bi-info-circle me-1"></i>Get audio alerts when you lose focus
+                            </small>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -845,6 +866,12 @@
 
                 if (!wasFocused) {
                     wasFocused = true;
+                    // Welcome back notification
+                    if (currentState === AppState.RUNNING) {
+                        showNotification('Great! You\'re back on track.', 'success');
+                        speakNotification('Good, keep focusing');
+                        setTimeout(hideNotification, 2000);
+                    }
                 }
             } else {
                 consecutiveFailures++;
@@ -862,7 +889,11 @@
                         wasFocused = false;
                     }
 
-                    showNotification('Face not detected. Please look at the camera.', 'danger');
+                    if (currentState === AppState.RUNNING) {
+                        showNotification('⚠️ Please refocus! Keep your face in view of the camera.', 'danger');
+                    } else {
+                        showNotification('Face not detected. Please look at the camera.', 'warning');
+                    }
 
                     statusBadge.className = 'not-focused';
                     statusText.textContent = 'Face Not Detected';
@@ -913,6 +944,8 @@
                 const guideText = document.getElementById('guide-text');
                 let count = 3;
 
+                speakNotification('Get ready. Exercise starting in 3, 2, 1');
+
                 const countInterval = setInterval(() => {
                     if (count > 0) {
                         guideText.innerHTML = `<h1>${count}</h1><p>Get ready...</p>`;
@@ -920,6 +953,7 @@
                     } else {
                         clearInterval(countInterval);
                         guideText.innerHTML = '<h4>Follow the dot with your eyes</h4><p class="text-muted">Keep your head steady</p>';
+                        speakNotification('Begin. Follow the dot with your eyes');
                         resolve();
                     }
                 }, 1000);
@@ -999,6 +1033,7 @@
 
             totalExerciseDuration = Math.floor((Date.now() - exerciseStartTime) / 100);
 
+            speakNotification('Exercise complete. Well done!');
             showSummary();
         }
 
@@ -1087,6 +1122,62 @@
             }
         }
 
+        // Voice notification system
+        let voiceEnabled = true;
+        let lastVoiceNotification = 0;
+        const VOICE_COOLDOWN = 5000; // 5 seconds between voice notifications
+
+        function speakNotification(message) {
+            if (!voiceEnabled) return;
+            
+            const now = Date.now();
+            if (now - lastVoiceNotification < VOICE_COOLDOWN) return;
+            
+            lastVoiceNotification = now;
+
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 0.8;
+            
+            // Use a clear, calm voice if available
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && 
+                (voice.name.includes('Google') || voice.name.includes('Microsoft'))
+            );
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleVoiceNotifications() {
+            voiceEnabled = !voiceEnabled;
+            const btn = document.getElementById('voice-toggle-btn');
+            const icon = btn.querySelector('i');
+            
+            if (voiceEnabled) {
+                icon.className = 'bi bi-volume-up-fill';
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-primary');
+                showNotification('Voice notifications enabled', 'success');
+                speakNotification('Voice notifications are now enabled');
+            } else {
+                icon.className = 'bi bi-volume-mute-fill';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-secondary');
+                showNotification('Voice notifications disabled', 'info');
+                window.speechSynthesis.cancel();
+            }
+            
+            setTimeout(hideNotification, 2000);
+        }
+
         function showNotification(message, type = 'warning') {
             const alert = document.getElementById('notification-alert');
             document.getElementById('notification-message').textContent = message;
@@ -1097,15 +1188,28 @@
             // Update icon based on type
             const icon = type === 'success' ? 'bi-check-circle' : 
                         type === 'danger' ? 'bi-exclamation-triangle' : 
-                        'bi-info-circle';
+                        type === 'info' ? 'bi-info-circle' :
+                        'bi-exclamation-triangle';
 
             const messageElement = document.getElementById('notification-message');
             messageElement.innerHTML = `<i class="bi ${icon} me-2"></i>${message}`;
+
+            // Trigger voice notification for warnings and errors during exercise
+            if ((type === 'warning' || type === 'danger') && currentState === AppState.RUNNING) {
+                speakNotification(message);
+            }
         }
 
         function hideNotification() {
             const alert = document.getElementById('notification-alert');
             alert.classList.remove('show');
+        }
+
+        // Load voices when available
+        if (window.speechSynthesis) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
         }
 
         function sleep(ms) {
