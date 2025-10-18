@@ -10,7 +10,7 @@ class EnhancedEyeTracker:
     visual feedback (bounding box, keypoints, and confidence score).
     """
 
-    def __init__(self, model_selection: int = 1, min_detection_confidence: float = 0.5) -> None:
+    def __init__(self, model_selection: int = 1, min_detection_confidence: float = 0.7) -> None:
         """
         Initializes the tracker with the MediaPipe FaceDetection model.
 
@@ -74,9 +74,21 @@ class EnhancedEyeTracker:
         annotated_frame = frame.copy()
         frame_height, frame_width, _ = annotated_frame.shape
 
+        # Preprocess frame for better detection
+        # Apply slight Gaussian blur to reduce noise
+        preprocessed_frame = cv2.GaussianBlur(frame, (5, 5), 0)
+        
+        # Enhance contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
+        lab = cv2.cvtColor(preprocessed_frame, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        l = clahe.apply(l)
+        enhanced_frame = cv2.merge([l, a, b])
+        enhanced_frame = cv2.cvtColor(enhanced_frame, cv2.COLOR_LAB2BGR)
+
         # Convert BGR to RGB - MediaPipe requires RGB format
         # IMPORTANT: Create a fresh copy and mark as NOT writeable for MediaPipe
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        rgb_frame = cv2.cvtColor(enhanced_frame, cv2.COLOR_BGR2RGB)
 
         # MediaPipe requires the image to be marked as not writeable during processing
         rgb_frame.flags.writeable = False
@@ -192,8 +204,19 @@ class EnhancedEyeTracker:
         if self.face_detection is None:
             return {'face_detected': False, 'success': False}
 
+        # Preprocess frame for better detection
+        preprocessed_frame = cv2.GaussianBlur(frame, (5, 5), 0)
+        
+        # Enhance contrast
+        lab = cv2.cvtColor(preprocessed_frame, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        l = clahe.apply(l)
+        enhanced_frame = cv2.merge([l, a, b])
+        enhanced_frame = cv2.cvtColor(enhanced_frame, cv2.COLOR_LAB2BGR)
+
         # Convert BGR to RGB for MediaPipe
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        rgb_frame = cv2.cvtColor(enhanced_frame, cv2.COLOR_BGR2RGB)
 
         # Mark as not writeable for MediaPipe processing
         rgb_frame.flags.writeable = False

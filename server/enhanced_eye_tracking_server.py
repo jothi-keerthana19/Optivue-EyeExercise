@@ -12,7 +12,11 @@ class EnhancedEyeTrackingServer:
         self.app = Flask(__name__)
         CORS(self.app, resources={r"/api/*": {"origins": "*"}})
 
-        self.eye_tracker = EnhancedEyeTracker(min_detection_confidence=0.7)
+        # Use higher confidence threshold for better accuracy
+        self.eye_tracker = EnhancedEyeTracker(
+            model_selection=1,  # Full-range model for better accuracy
+            min_detection_confidence=0.75  # Higher threshold for more reliable detections
+        )
 
         self.last_processed_frame: Optional[np.ndarray] = None
         self.last_detection_result: Optional[Dict[str, Any]] = None
